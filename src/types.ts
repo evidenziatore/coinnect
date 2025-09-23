@@ -2,7 +2,7 @@ export interface User {
   id: number;
   name: string;
   email?: string;
-  createdAt?: string;
+  created_at?: string;
 }
 
 export interface Category {
@@ -20,8 +20,8 @@ export interface Source {
 export interface Product {
   id: number;
   name: string;
-  categoryId: number;
-  sourceId: number;
+  category_id: number;
+  source_id: number;
   weight?: number;
   category?: Category;
   source?: Source;
@@ -31,14 +31,14 @@ export interface MovementType {
   id: number;
   name: string;
   color?: string;
-  isIncome: boolean;
+  is_income: boolean;
 }
 
 export interface Movement {
   id: number;
-  userId: number;
-  productId: number;
-  typeId: number;
+  user_id: number;
+  product_id: number;
+  type_id: number;
   amount: number;
   date?: string;
   product?: Product;
