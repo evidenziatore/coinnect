@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import UserForm from './UserForm';
-import UserEditForm from './UserEditForm';
 
 interface User {
   id: number;
@@ -22,9 +20,8 @@ interface UserDetailsProps {
 }
 
 const UserDetails: React.FC<UserDetailsProps> = ({
-  user, nameInput, emailInput, setNameInput, setEmailInput,
-  onEdit, onDelete, onSelectAnother, onAddNew
-}) => {
+  user, 
+  onEdit, onDelete, onSelectAnother}) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 

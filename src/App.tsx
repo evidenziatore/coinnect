@@ -20,7 +20,6 @@ const App: React.FC = () => {
   const [emailInput, setEmailInput] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const prevShowEditForm = React.useRef(false);
 
   const fetchUsers = async () => {
     const result: User[] = await invoke('list_users');
@@ -45,16 +44,6 @@ const App: React.FC = () => {
     await fetchUsers();
     setShowCreateForm(false);
     setSelectedUser(null);
-  };
-
-  const editUser = async () => {
-    if (!selectedUser) return;
-    await invoke('edit_user', { id: selectedUser.id, name: nameInput, email: emailInput || null });
-    setNameInput(''); setEmailInput('');
-    await fetchUsers();
-    const updated = users.find(u => u.id === selectedUser.id);
-    if (updated) setSelectedUser(updated);
-    setShowEditForm(false);
   };
 
   const removeUser = async () => {
