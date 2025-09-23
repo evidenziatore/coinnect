@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
-
-interface User {
-  id: number;
-  name: string;
-  email?: string;
-  created_at?: string;
-}
+import UserInfo from './UserInfo';
+import { User } from './types';
 
 interface UserDetailsProps {
   user: User;
@@ -55,7 +50,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({
           </div>
         )}
       </div>
-      {/* Qui sotto puoi aggiungere altri componenti/informazioni utente */}
+      <UserInfo user={user} />
       {showDeleteConfirm && (
         <div style={{
           position: 'fixed',
@@ -71,7 +66,12 @@ const UserDetails: React.FC<UserDetailsProps> = ({
         }}>
           <div style={{ background: '#fff', borderRadius: 12, padding: '32px 28px', boxShadow: '0 4px 24px rgba(0,0,0,0.18)', minWidth: 320, textAlign: 'center' }}>
             <div style={{ fontSize: '1.2rem', marginBottom: 18 }}>
-              Sei sicuro di voler eliminare l'utente <b>{user.name}</b>? Questa operazione è irreversibile e tutti i dati verranno persi.
+              <div>
+                Sei sicuro di voler eliminare l'utente <b>{user.name}</b>?
+              </div>
+              <div>
+                Questa operazione è irreversibile e tutti i dati collegati all'utente verranno persi.
+              </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '18px', marginTop: 12 }}>
               <button className="button-red" onClick={() => { setShowDeleteConfirm(false); onDelete(); }}>Elimina</button>

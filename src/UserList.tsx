@@ -1,10 +1,5 @@
 import React from 'react';
-
-interface User {
-  id: number;
-  name: string;
-  email?: string;
-}
+import { User } from './types';
 
 interface UserListProps {
   users: User[];

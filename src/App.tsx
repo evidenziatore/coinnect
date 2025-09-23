@@ -5,13 +5,7 @@ import UserForm from './UserForm';
 import UserList from './UserList';
 import UserDetails from './UserDetails';
 import UserEditForm from './UserEditForm';
-
-interface User {
-  id: number;
-  name: string;
-  email?: string;
-  created_at?: string;
-}
+import { User } from './types';
 
 const App: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -21,11 +15,11 @@ const App: React.FC = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
 
-  const fetchUsers = async () => {
-    const result: User[] = await invoke('list_users');
-    setUsers(result);
-    // if (result.length === 1) setSelectedUser(result[0]);
-  };
+const fetchUsers = async (): Promise<User[]> => {
+  const users = await invoke<User[]>('list_users');
+  setUsers(users);
+  return users; // <- restituisci la lista aggiornata
+};
 
   useEffect(() => { fetchUsers(); }, []);
 
@@ -50,7 +44,7 @@ const App: React.FC = () => {
     if (!selectedUser) return;
     await invoke('remove_user', { id: selectedUser.id });
     await fetchUsers();
-      setSelectedUser(null);
+    setSelectedUser(null);
   };
 
   if (!selectedUser && users.length === 0) {
@@ -114,8 +108,8 @@ const App: React.FC = () => {
             email={selectedUser.email || ''}
             onSubmit={async (newName, newEmail) => {
               await invoke('edit_user', { id: selectedUser.id, name: newName, email: newEmail || null });
-              await fetchUsers();
-              const updated = users.find(u => u.id === selectedUser.id);
+              const updatedUsers = await fetchUsers();
+              const updated = updatedUsers.find(u => u.id === selectedUser.id);
               if (updated) setSelectedUser(updated);
               setShowEditForm(false);
             }}
