@@ -1,3 +1,82 @@
+.button-red {
+    background-color: #e53e3e;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+    margin: 5px;
+}
+.button-red:hover {
+    background-color: #c53030;
+    transform: translateY(-2px);
+}
+
+.button-green {
+    background-color: #38a169;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+    margin: 5px;
+}
+.button-green:hover {
+    background-color: #2f855a;
+    transform: translateY(-2px);
+}
+.user-actions-dropdown {
+    position: absolute;
+    top: 45px;
+    left: 0;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    width: 210px;
+    z-index: 10;
+    padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.user-actions-dropdown .dropdown-btn {
+    background: none;
+    border: none;
+    color: #4a4a4a;
+    font-size: 1rem;
+    text-align: left;
+    padding: 12px 22px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-radius: 0;
+}
+
+.user-actions-dropdown .dropdown-btn:hover {
+    background: #f3f4f6;
+}
+
+.user-actions-dropdown .dropdown-btn.delete {
+    color: #e53e3e;
+}
+.back-btn-alt {
+    background-color: #e2e8f0;
+    color: #667eea;
+    border: 1px solid #667eea;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.back-btn-alt:hover {
+    background-color: #cbd5e1;
+    color: #5a67d8;
+    border-color: #5a67d8;
+}
 body {
     margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

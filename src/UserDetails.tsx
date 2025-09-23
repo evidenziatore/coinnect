@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import UserForm from './UserForm';
+import UserEditForm from './UserEditForm';
 
 interface User {
   id: number;
@@ -23,37 +24,67 @@ interface UserDetailsProps {
 const UserDetails: React.FC<UserDetailsProps> = ({
   user, nameInput, emailInput, setNameInput, setEmailInput,
   onEdit, onDelete, onSelectAnother, onAddNew
-}) => (
-  <div>
-    <h1>Dettagli Utente</h1>
-    <p><strong>Nome:</strong> {user.name}</p>
-    <p><strong>Email:</strong> {user.email || '-'}</p>
-    <p><strong>Creato il:</strong> {user.created_at || '-'}</p>
+}) => {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-    <h2>Modifica Utente</h2>
-    <UserForm
-      name={nameInput}
-      email={emailInput}
-      setName={setNameInput}
-      setEmail={setEmailInput}
-      onSubmit={onEdit}
-      submitLabel="Salva Modifiche"
-    />
 
-    <h2>Gestione Utente</h2>
-    <button className="button" onClick={onDelete}>Elimina Utente</button>
-    <button className="button" onClick={onSelectAnother}>Seleziona un altro utente</button>
-
-    <h2>Aggiungi Nuovo Utente</h2>
-    <UserForm
-      name={nameInput}
-      email={emailInput}
-      setName={setNameInput}
-      setEmail={setEmailInput}
-      onSubmit={onAddNew}
-      submitLabel="Crea Utente"
-    />
-  </div>
-);
+  return (
+    <div style={{
+      position: 'fixed',
+      left: '50%',
+      width: '95vw',
+      height: '95vh',
+      transform: 'translate(-50%, -50%)',
+      background: '#fafbfc',
+      borderRadius: '24px',
+      boxShadow: '0 4px 32px rgba(0,0,0,0.10)'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+        <button
+          className="button"
+          style={{ fontWeight: 'bold', fontSize: '1.2rem', padding: '8px 18px 8px 18px', borderRadius: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}
+          onClick={() => setDropdownOpen(v => !v)}
+          aria-label="Azioni utente"
+        >
+          {user.name}
+          <span role="img" aria-label="Impostazioni" style={{ fontSize: '2.8rem', lineHeight: '1' }}>⚙️</span>
+        </button>
+        {dropdownOpen && (
+          <div className="user-actions-dropdown">
+            <button className="dropdown-btn" onClick={() => { setDropdownOpen(false); onSelectAnother(); }}>Seleziona altro utente</button>
+            <button className="dropdown-btn" onClick={() => { setDropdownOpen(false); onEdit(); }}>Modifica utente</button>
+            <button className="dropdown-btn delete" onClick={() => { setDropdownOpen(false); setShowDeleteConfirm(true); }}>Elimina utente</button>
+          </div>
+        )}
+      </div>
+      {/* Qui sotto puoi aggiungere altri componenti/informazioni utente */}
+      {showDeleteConfirm && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0,0,0,0.25)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: '32px 28px', boxShadow: '0 4px 24px rgba(0,0,0,0.18)', minWidth: 320, textAlign: 'center' }}>
+            <div style={{ fontSize: '1.2rem', marginBottom: 18 }}>
+              Sei sicuro di voler eliminare l'utente <b>{user.name}</b>? Questa operazione è irreversibile e tutti i dati verranno persi.
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '18px', marginTop: 12 }}>
+              <button className="button-red" onClick={() => { setShowDeleteConfirm(false); onDelete(); }}>Elimina</button>
+              <button className="button" onClick={() => setShowDeleteConfirm(false)}>Annulla</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default UserDetails;

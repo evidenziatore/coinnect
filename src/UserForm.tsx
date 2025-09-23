@@ -6,14 +6,21 @@ interface UserFormProps {
   setName: (value: string) => void;
   setEmail: (value: string) => void;
   onSubmit: () => void;
-  submitLabel: string;
+  onBack?: () => void;
 }
 
-const UserForm: React.FC<UserFormProps> = ({ name, email, setName, setEmail, onSubmit, submitLabel }) => (
+const UserForm: React.FC<UserFormProps> = ({ name, email, setName, setEmail, onSubmit, onBack }) => (
   <div>
     <input className="input-field" placeholder="Nome" value={name} onChange={e => setName(e.target.value)} />
     <input className="input-field" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
-    <button className="button" onClick={onSubmit}>{submitLabel}</button>
+    <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '16px' }}>
+        <button className="button-green" onClick={onSubmit}>Crea nuovo utente</button>
+      {onBack && (
+        <button className="button" type="button" onClick={onBack}>
+          Indietro
+        </button>
+      )}
+    </div>
   </div>
 );
 
