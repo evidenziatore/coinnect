@@ -181,8 +181,8 @@ fn edit_movement_type(id: i32, name: Option<String>, color: Option<String>, isin
 
 // ---------------- MOVEMENTS ----------------
 #[tauri::command]
-fn add_movement(userid: i32, productid: i32, typeid: i32, amount: f64, date: Option<String>) {
-    coinnect_lib::create_movement(userid, productid, typeid, amount, date.as_deref());
+fn add_movement(userid: i32, productid: i32, typeid: i32, date: Option<String>) {
+    coinnect_lib::create_movement(userid, productid, typeid, date.as_deref());
 }
 
 #[tauri::command]
@@ -201,6 +201,6 @@ fn remove_movement(id: i32) -> usize {
 }
 
 #[tauri::command]
-fn edit_movement(id: i32, userid: Option<i32>, productid: Option<i32>, typeid: Option<i32>, amount: Option<f64>, date: Option<String>) -> usize {
-    coinnect_lib::update_movement(id, userid, productid, typeid, amount, date.as_deref())
+fn edit_movement(id: i32, userid: Option<i32>, productid: Option<i32>, typeid: Option<i32>, date: Option<String>) -> usize {
+    coinnect_lib::update_movement(id, userid, productid, typeid, date.as_deref())
 }

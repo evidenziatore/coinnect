@@ -47,7 +47,6 @@ diesel::table! {
         user_id -> Integer,
         product_id -> Integer,
         type_id -> Integer,
-        amount -> Double,
         date -> Nullable<Text>,
     }
 }

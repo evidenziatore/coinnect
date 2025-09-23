@@ -82,7 +82,6 @@ pub fn initialize_db() {
             user_id INTEGER NOT NULL,
             product_id INTEGER NOT NULL,
             type_id INTEGER NOT NULL,
-            amount REAL NOT NULL,
             date DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
             FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,

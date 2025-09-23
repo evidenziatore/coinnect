@@ -90,7 +90,6 @@ pub struct Movement {
     pub user_id: i32,
     pub product_id: i32,
     pub type_id: i32,
-    pub amount: f64,
     pub date: Option<String>,
 }
 
@@ -100,6 +99,5 @@ pub struct NewMovement {
     pub user_id: i32,
     pub product_id: i32,
     pub type_id: i32,
-    pub amount: f64,
     pub date: Option<String>,
 }

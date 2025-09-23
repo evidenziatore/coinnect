@@ -250,13 +250,12 @@ pub struct UpdateMovement<'a> {
     pub user_id: Option<i32>,
     pub product_id: Option<i32>,
     pub type_id: Option<i32>,
-    pub amount: Option<f64>,
     pub date: Option<&'a str>,
 }
 
-pub fn create_movement(user_id: i32, product_id: i32, type_id: i32, amount: f64, date: Option<&str>) -> usize {
+pub fn create_movement(user_id: i32, product_id: i32, type_id: i32, date: Option<&str>) -> usize {
     let mut conn = establish_connection();
-    let new_movement = NewMovement { user_id, product_id, type_id, amount, date: date.map(|s| s.to_string()) };
+    let new_movement = NewMovement { user_id, product_id, type_id, date: date.map(|s| s.to_string()) };
     diesel::insert_into(movements::table)
         .values(&new_movement)
         .execute(&mut conn)
@@ -283,13 +282,12 @@ pub fn delete_movement(movement_id: i32) -> usize {
         .expect("Errore eliminazione movimento")
 }
 
-pub fn update_movement(movement_id: i32, new_user_id: Option<i32>, new_product_id: Option<i32>, new_type_id: Option<i32>, new_amount: Option<f64>, new_date: Option<&str>) -> usize {
+pub fn update_movement(movement_id: i32, new_user_id: Option<i32>, new_product_id: Option<i32>, new_type_id: Option<i32>, new_date: Option<&str>) -> usize {
     let mut conn = establish_connection();
     let changes = UpdateMovement {
         user_id: new_user_id,
         product_id: new_product_id,
         type_id: new_type_id,
-        amount: new_amount,
         date: new_date,
     };
     diesel::update(movements::table.filter(movements::id.eq(movement_id)))

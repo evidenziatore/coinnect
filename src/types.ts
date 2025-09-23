@@ -39,7 +39,6 @@ export interface Movement {
   user_id: number;
   product_id: number;
   type_id: number;
-  amount: number;
   date?: string;
   product?: Product;
   type?: MovementType;
