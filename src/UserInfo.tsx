@@ -9,10 +9,11 @@ const UserInfo: React.FC<UserInfoProps> = ({ user }) => {
   return (
     <div style={{
       padding: '16px',
-      background: '#fff',
+      background: '#e6e6fa',
       borderRadius: '16px',
       boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
-      margin: '16px'
+      margin: '16px',
+      height: '84.5vh'
     }}>
       <div style={{ marginBottom: '8px', fontSize: '1rem' }}>
         <strong>Nome:</strong> {user.name}
