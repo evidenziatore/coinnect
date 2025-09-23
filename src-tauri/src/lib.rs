@@ -71,6 +71,14 @@ pub fn get_categories() -> Vec<Category> {
     categories::table.load::<Category>(&mut conn).expect("Errore lettura categorie")
 }
 
+pub fn get_category_by_id(category_id: i32) -> Option<Category> {
+    let mut conn = establish_connection();
+    categories::table
+        .filter(categories::id.eq(category_id))
+        .first::<Category>(&mut conn)
+        .ok() // restituisce Some(Category) se trovato, None altrimenti
+}
+
 pub fn delete_category(category_id: i32) -> usize {
     let mut conn = establish_connection();
     diesel::delete(categories::table.filter(categories::id.eq(category_id)))
@@ -108,6 +116,14 @@ pub fn create_product(name: &str, category_id: i32, weight: Option<f64>) -> usiz
 pub fn get_products() -> Vec<Product> {
     let mut conn = establish_connection();
     products::table.load::<Product>(&mut conn).expect("Errore lettura prodotti")
+}
+
+pub fn get_product_by_id(product_id: i32) -> Option<Product> {
+    let mut conn = establish_connection();
+    products::table
+        .filter(products::id.eq(product_id))
+        .first::<Product>(&mut conn)
+        .ok()
 }
 
 pub fn delete_product(product_id: i32) -> usize {
@@ -149,6 +165,14 @@ pub fn get_movement_types() -> Vec<MovementType> {
     movement_types::table.load::<MovementType>(&mut conn).expect("Errore lettura tipi movimento")
 }
 
+pub fn get_movement_type_by_id(type_id: i32) -> Option<MovementType> {
+    let mut conn = establish_connection();
+    movement_types::table
+        .filter(movement_types::id.eq(type_id))
+        .first::<MovementType>(&mut conn)
+        .ok()
+}
+
 pub fn delete_movement_type(type_id: i32) -> usize {
     let mut conn = establish_connection();
     diesel::delete(movement_types::table.filter(movement_types::id.eq(type_id)))
@@ -188,6 +212,14 @@ pub fn create_movement(user_id: i32, product_id: i32, type_id: i32, amount: f64,
 pub fn get_movements() -> Vec<Movement> {
     let mut conn = establish_connection();
     movements::table.load::<Movement>(&mut conn).expect("Errore lettura movimenti")
+}
+
+pub fn get_movements_by_user(user_id: i32) -> Vec<Movement> {
+    let mut conn = establish_connection();
+    movements::table
+        .filter(movements::user_id.eq(user_id))
+        .load::<Movement>(&mut conn)
+        .expect("Errore lettura movimenti per utente")
 }
 
 pub fn delete_movement(movement_id: i32) -> usize {

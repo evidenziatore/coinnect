@@ -16,13 +16,14 @@ export interface Product {
   name: string;
   categoryId: number;
   weight?: number;
+  category?: Category;
 }
 
 export interface MovementType {
   id: number;
   name: string;
   color?: string;
-  isIncome: boolean; // true = entrata, false = uscita
+  isIncome: boolean;
 }
 
 export interface Movement {
@@ -32,4 +33,6 @@ export interface Movement {
   typeId: number;
   amount: number;
   date?: string;
+  product?: Product;
+  type?: MovementType;
 }

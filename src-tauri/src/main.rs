@@ -34,7 +34,11 @@ fn main() {
             add_movement,
             list_movements,
             remove_movement,
-            edit_movement
+            edit_movement,
+            get_category_by_id,
+            get_product_by_id,
+            get_movement_type_by_id,
+            get_movements_by_user
         ])
         .setup(|app| {
             let version = env!("CARGO_PKG_VERSION"); // legge la versione da Cargo.toml
@@ -83,6 +87,11 @@ fn list_categories() -> Vec<Category> {
 }
 
 #[tauri::command]
+fn get_category_by_id(categoryid: i32) -> Option<Category> {
+    coinnect_lib::get_category_by_id(categoryid)
+}
+
+#[tauri::command]
 fn remove_category(id: i32) -> usize {
     delete_category(id)
 }
@@ -101,6 +110,11 @@ fn add_product(name: String, categoryid: i32, weight: Option<f64>) {
 #[tauri::command]
 fn list_products() -> Vec<Product> {
     get_products()
+}
+
+#[tauri::command]
+fn get_product_by_id(productid: i32) -> Option<Product> {
+    coinnect_lib::get_product_by_id(productid)
 }
 
 #[tauri::command]
@@ -125,6 +139,11 @@ fn list_movement_types() -> Vec<MovementType> {
 }
 
 #[tauri::command]
+fn get_movement_type_by_id(typeid: i32) -> Option<MovementType> {
+    coinnect_lib::get_movement_type_by_id(typeid)
+}
+
+#[tauri::command]
 fn remove_movement_type(id: i32) -> usize {
     delete_movement_type(id)
 }
@@ -143,6 +162,11 @@ fn add_movement(userid: i32, productid: i32, typeid: i32, amount: f64, date: Opt
 #[tauri::command]
 fn list_movements() -> Vec<Movement> {
     get_movements()
+}
+
+#[tauri::command]
+fn get_movements_by_user(userid: i32) -> Vec<Movement> {
+    coinnect_lib::get_movements_by_user(userid)
 }
 
 #[tauri::command]
