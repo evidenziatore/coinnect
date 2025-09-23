@@ -34,6 +34,21 @@ pub struct NewCategory {
     pub color: Option<String>,
 }
 
+// ---------------- SOURCES ----------------
+#[derive(Queryable, Serialize)]
+pub struct Source {
+    pub id: i32,
+    pub name: String,
+    pub color: Option<String>,
+}
+
+#[derive(Insertable, Deserialize)]
+#[diesel(table_name = sources)]
+pub struct NewSource {
+    pub name: String,
+    pub color: Option<String>,
+}
+
 // ---------------- PRODUCTS ----------------
 #[derive(Queryable, Serialize)]
 pub struct Product {

@@ -1,12 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use coinnect_lib::{
-    create_user, db::initialize_db, delete_user, get_users, update_user,
-    create_category, get_categories, delete_category, update_category,
-    create_product, get_products, delete_product, update_product,
-    create_movement_type, get_movement_types, delete_movement_type, update_movement_type,
-    create_movement, get_movements, delete_movement, update_movement,
-    models::{User, Category, Product, MovementType, Movement},
+use coinnect_lib::{db::initialize_db,
+    models::{Category, Movement, MovementType, Product, Source, User},
 };
 use tauri::Manager;
 
@@ -38,7 +33,12 @@ fn main() {
             get_category_by_id,
             get_product_by_id,
             get_movement_type_by_id,
-            get_movements_by_user
+            get_movements_by_user,
+            get_source_by_id,
+            add_source,
+            list_sources,
+            remove_source,
+            edit_source
         ])
         .setup(|app| {
             let version = env!("CARGO_PKG_VERSION"); // legge la versione da Cargo.toml
@@ -57,33 +57,33 @@ fn main() {
 // ---------------- USERS ----------------
 #[tauri::command]
 fn add_user(name: String, email: Option<String>) {
-    create_user(&name, email.as_deref());
+    coinnect_lib::create_user(&name, email.as_deref());
 }
 
 #[tauri::command]
 fn list_users() -> Vec<User> {
-    get_users()
+    coinnect_lib::get_users()
 }
 
 #[tauri::command]
 fn remove_user(id: i32) -> usize {
-    delete_user(id)
+    coinnect_lib::delete_user(id)
 }
 
 #[tauri::command]
 fn edit_user(id: i32, name: Option<String>, email: Option<String>) -> usize {
-    update_user(id, name.as_deref(), email.as_deref())
+    coinnect_lib::update_user(id, name.as_deref(), email.as_deref())
 }
 
 // ---------------- CATEGORIES ----------------
 #[tauri::command]
 fn add_category(name: String, color: Option<String>) {
-    create_category(&name, color.as_deref());
+    coinnect_lib::create_category(&name, color.as_deref());
 }
 
 #[tauri::command]
 fn list_categories() -> Vec<Category> {
-    get_categories()
+    coinnect_lib::get_categories()
 }
 
 #[tauri::command]
@@ -93,23 +93,49 @@ fn get_category_by_id(categoryid: i32) -> Option<Category> {
 
 #[tauri::command]
 fn remove_category(id: i32) -> usize {
-    delete_category(id)
+    coinnect_lib::delete_category(id)
 }
 
 #[tauri::command]
 fn edit_category(id: i32, name: Option<String>, color: Option<String>) -> usize {
-    update_category(id, name.as_deref(), color.as_deref())
+    coinnect_lib::update_category(id, name.as_deref(), color.as_deref())
+}
+
+// ---------------- SOURCES ----------------
+#[tauri::command]
+fn add_source(name: String, color: Option<String>) {
+    coinnect_lib::create_source(&name, color.as_deref());
+}
+
+#[tauri::command]
+fn list_sources() -> Vec<Source> {
+    coinnect_lib::get_sources()
+}
+
+#[tauri::command]
+fn get_source_by_id(sourceid: i32) -> Option<Source> {
+    coinnect_lib::get_source_by_id(sourceid)
+}
+
+#[tauri::command]
+fn remove_source(id: i32) -> usize {
+    coinnect_lib::delete_source(id)
+}
+
+#[tauri::command]
+fn edit_source(id: i32, name: Option<String>, color: Option<String>) -> usize {
+    coinnect_lib::update_source(id, name.as_deref(), color.as_deref())
 }
 
 // ---------------- PRODUCTS ----------------
 #[tauri::command]
 fn add_product(name: String, categoryid: i32, weight: Option<f64>) {
-    create_product(&name, categoryid, weight);
+    coinnect_lib::create_product(&name, categoryid, weight);
 }
 
 #[tauri::command]
 fn list_products() -> Vec<Product> {
-    get_products()
+    coinnect_lib::get_products()
 }
 
 #[tauri::command]
@@ -119,23 +145,23 @@ fn get_product_by_id(productid: i32) -> Option<Product> {
 
 #[tauri::command]
 fn remove_product(id: i32) -> usize {
-    delete_product(id)
+    coinnect_lib::delete_product(id)
 }
 
 #[tauri::command]
 fn edit_product(id: i32, name: Option<String>, categoryid: Option<i32>, weight: Option<f64>) -> usize {
-    update_product(id, name.as_deref(), categoryid, weight)
+    coinnect_lib::update_product(id, name.as_deref(), categoryid, weight)
 }
 
 // ---------------- MOVEMENT TYPES ----------------
 #[tauri::command]
 fn add_movement_type(name: String, color: Option<String>, isincome: bool) {
-    create_movement_type(&name, color.as_deref(), isincome);
+    coinnect_lib::create_movement_type(&name, color.as_deref(), isincome);
 }
 
 #[tauri::command]
 fn list_movement_types() -> Vec<MovementType> {
-    get_movement_types()
+    coinnect_lib::get_movement_types()
 }
 
 #[tauri::command]
@@ -145,23 +171,23 @@ fn get_movement_type_by_id(typeid: i32) -> Option<MovementType> {
 
 #[tauri::command]
 fn remove_movement_type(id: i32) -> usize {
-    delete_movement_type(id)
+    coinnect_lib::delete_movement_type(id)
 }
 
 #[tauri::command]
 fn edit_movement_type(id: i32, name: Option<String>, color: Option<String>, isincome: Option<bool>) -> usize {
-    update_movement_type(id, name.as_deref(), color.as_deref(), isincome)
+    coinnect_lib::update_movement_type(id, name.as_deref(), color.as_deref(), isincome)
 }
 
 // ---------------- MOVEMENTS ----------------
 #[tauri::command]
 fn add_movement(userid: i32, productid: i32, typeid: i32, amount: f64, date: Option<String>) {
-    create_movement(userid, productid, typeid, amount, date.as_deref());
+    coinnect_lib::create_movement(userid, productid, typeid, amount, date.as_deref());
 }
 
 #[tauri::command]
 fn list_movements() -> Vec<Movement> {
-    get_movements()
+    coinnect_lib::get_movements()
 }
 
 #[tauri::command]
@@ -171,10 +197,10 @@ fn get_movements_by_user(userid: i32) -> Vec<Movement> {
 
 #[tauri::command]
 fn remove_movement(id: i32) -> usize {
-    delete_movement(id)
+    coinnect_lib::delete_movement(id)
 }
 
 #[tauri::command]
 fn edit_movement(id: i32, userid: Option<i32>, productid: Option<i32>, typeid: Option<i32>, amount: Option<f64>, date: Option<String>) -> usize {
-    update_movement(id, userid, productid, typeid, amount, date.as_deref())
+    coinnect_lib::update_movement(id, userid, productid, typeid, amount, date.as_deref())
 }

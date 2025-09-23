@@ -16,6 +16,14 @@ diesel::table! {
 }
 
 diesel::table! {
+    sources (id) {
+        id -> Integer,
+        name -> Text,
+        color -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
     products (id) {
         id -> Integer,
         name -> Text,

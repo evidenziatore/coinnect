@@ -95,6 +95,60 @@ pub fn update_category(category_id: i32, new_name: Option<&str>, new_color: Opti
         .expect("Errore aggiornamento categoria")
 }
 
+// ---------------- SOURCES ----------------
+#[derive(AsChangeset)]
+#[diesel(table_name = sources)]
+pub struct UpdateSource<'a> {
+    pub name: Option<&'a str>,
+    pub color: Option<&'a str>,
+}
+
+pub fn create_source(name: &str, color: Option<&str>) -> usize {
+    let mut conn = establish_connection();
+    let new_source = NewSource { 
+        name: name.to_string(), 
+        color: color.map(|s| s.to_string())
+    };
+    diesel::insert_into(sources::table)
+        .values(&new_source)
+        .execute(&mut conn)
+        .expect("Errore inserimento source")
+}
+
+pub fn get_sources() -> Vec<Source> {
+    let mut conn = establish_connection();
+    sources::table
+        .load::<Source>(&mut conn)
+        .expect("Errore lettura sources")
+}
+
+pub fn get_source_by_id(source_id: i32) -> Option<Source> {
+    let mut conn = establish_connection();
+    sources::table
+        .filter(sources::id.eq(source_id))
+        .first::<Source>(&mut conn)
+        .ok()
+}
+
+pub fn delete_source(source_id: i32) -> usize {
+    let mut conn = establish_connection();
+    diesel::delete(sources::table.filter(sources::id.eq(source_id)))
+        .execute(&mut conn)
+        .expect("Errore eliminazione source")
+}
+
+pub fn update_source(source_id: i32, new_name: Option<&str>, new_color: Option<&str>) -> usize {
+    let mut conn = establish_connection();
+    let changes = UpdateSource { 
+        name: new_name, 
+        color: new_color
+    };
+    diesel::update(sources::table.filter(sources::id.eq(source_id)))
+        .set(changes)
+        .execute(&mut conn)
+        .expect("Errore aggiornamento source")
+}
+
 // ---------------- PRODUCTS ----------------
 #[derive(AsChangeset)]
 #[diesel(table_name = products)]

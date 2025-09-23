@@ -42,12 +42,24 @@ pub fn initialize_db() {
     .expect("Errore creazione tabella categories");
 
     diesel::sql_query(
+        "CREATE TABLE IF NOT EXISTS sources (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            color TEXT
+        );"
+    )
+    .execute(&mut conn)
+    .expect("Errore creazione tabella sources");
+
+    diesel::sql_query(
         "CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             category_id INTEGER NOT NULL,
             weight REAL,
-            FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT
+            source_id INTEGER,
+            FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE RESTRICT,
+            FOREIGN KEY(source_id) REFERENCES sources(id) ON DELETE RESTRICT
         );"
     )
     .execute(&mut conn)

@@ -2,10 +2,16 @@ export interface User {
   id: number;
   name: string;
   email?: string;
-  created_at?: string;
+  createdAt?: string;
 }
 
 export interface Category {
+  id: number;
+  name: string;
+  color?: string;
+}
+
+export interface Source {
   id: number;
   name: string;
   color?: string;
@@ -15,8 +21,10 @@ export interface Product {
   id: number;
   name: string;
   categoryId: number;
+  sourceId: number;
   weight?: number;
   category?: Category;
+  source?: Source;
 }
 
 export interface MovementType {

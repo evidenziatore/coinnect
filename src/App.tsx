@@ -100,7 +100,7 @@ const fetchUsers = async (): Promise<User[]> => {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 18, width: '100%' }}>
           <div style={{ width: '100%', maxWidth: 320, marginBottom: 8, textAlign: 'center' }}><strong>Nome:</strong> {selectedUser.name}</div>
           <div style={{ width: '100%', maxWidth: 320, marginBottom: 8, textAlign: 'center' }}><strong>Email:</strong> {selectedUser.email || '-'}</div>
-          <div style={{ width: '100%', maxWidth: 320, textAlign: 'center' }}><strong>Creato il:</strong> {selectedUser.created_at || '-'}</div>
+          <div style={{ width: '100%', maxWidth: 320, textAlign: 'center' }}><strong>Creato il:</strong> {selectedUser.createdAt || '-'}</div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
           <UserEditForm
