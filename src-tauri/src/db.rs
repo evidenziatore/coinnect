@@ -16,7 +16,9 @@ pub fn initialize_db() {
     diesel::sql_query(
         "CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL
+            name TEXT NOT NULL,
+            email TEXT UNIQUE,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );"
     )
     .execute(&mut conn)

@@ -6,10 +6,14 @@ use crate::schema::users;
 pub struct User {
     pub id: i32,
     pub name: String,
+    pub email: Option<String>,
+    pub created_at: Option<String>,
 }
 
 #[derive(Insertable, Deserialize)]
 #[diesel(table_name = users)]
 pub struct NewUser {
     pub name: String,
+    pub email: Option<String>,
+    pub created_at: Option<String>,
 }
