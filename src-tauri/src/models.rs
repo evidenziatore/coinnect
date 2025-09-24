@@ -3,12 +3,12 @@ use diesel::prelude::*;
 use crate::schema::*;
 
 // ---------------- USERS ----------------
-#[derive(Queryable, Serialize)]
+#[derive(Queryable, Serialize, Deserialize, Debug)]
 pub struct User {
     pub id: i32,
     pub name: String,
     pub email: Option<String>,
-    pub created_at: Option<String>, // SQLite salva le date come testo
+    pub created_at: Option<String>,
 }
 
 #[derive(Insertable, Deserialize)]
@@ -20,7 +20,7 @@ pub struct NewUser {
 }
 
 // ---------------- CATEGORIES ----------------
-#[derive(Queryable, Serialize)]
+#[derive(Queryable, Serialize, Deserialize, Debug)]
 pub struct Category {
     pub id: i32,
     pub name: String,
@@ -35,7 +35,7 @@ pub struct NewCategory {
 }
 
 // ---------------- SOURCES ----------------
-#[derive(Queryable, Serialize)]
+#[derive(Queryable, Serialize, Deserialize, Debug)]
 pub struct Source {
     pub id: i32,
     pub name: String,
@@ -50,46 +50,30 @@ pub struct NewSource {
 }
 
 // ---------------- PRODUCTS ----------------
-#[derive(Queryable, Serialize)]
+#[derive(Queryable, Serialize, Deserialize, Debug)]
 pub struct Product {
     pub id: i32,
     pub name: String,
-    pub category_id: i32,
-    pub weight: Option<f64>,
+    pub color: Option<String>,
 }
 
 #[derive(Insertable, Deserialize)]
 #[diesel(table_name = products)]
 pub struct NewProduct {
     pub name: String,
-    pub category_id: i32,
-    pub weight: Option<f64>,
-}
-
-// ---------------- MOVEMENT TYPES ----------------
-#[derive(Queryable, Serialize)]
-pub struct MovementType {
-    pub id: i32,
-    pub name: String,
     pub color: Option<String>,
-    pub is_income: bool,
-}
-
-#[derive(Insertable, Deserialize)]
-#[diesel(table_name = movement_types)]
-pub struct NewMovementType {
-    pub name: String,
-    pub color: Option<String>,
-    pub is_income: bool,
 }
 
 // ---------------- MOVEMENTS ----------------
-#[derive(Queryable, Serialize)]
+#[derive(Queryable, Serialize, Deserialize, Debug)]
 pub struct Movement {
     pub id: i32,
     pub user_id: i32,
     pub product_id: i32,
-    pub type_id: i32,
+    pub category_id: i32,
+    pub source_id: i32,
+    pub weight: Option<f64>,
+    pub price: Option<f64>,
     pub date: Option<String>,
 }
 
@@ -98,6 +82,9 @@ pub struct Movement {
 pub struct NewMovement {
     pub user_id: i32,
     pub product_id: i32,
-    pub type_id: i32,
+    pub category_id: i32,
+    pub source_id: i32,
+    pub weight: Option<f64>,
+    pub price: Option<f64>,
     pub date: Option<String>,
 }

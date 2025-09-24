@@ -8,19 +8,12 @@ use crate::models::*;
 use crate::schema::*;
 
 // ---------------- USERS ----------------
-#[derive(AsChangeset)]
-#[diesel(table_name = users)]
-pub struct UpdateUser<'a> {
-    pub name: Option<&'a str>,
-    pub email: Option<&'a str>,
-}
-
 pub fn create_user(name: &str, email: Option<&str>) -> usize {
     let mut conn = establish_connection();
     let new_user = NewUser {
         name: name.to_string(),
-        email: email.map(|s| s.to_string()), // email opzionale
-        created_at: None, // lascia che SQLite metta CURRENT_TIMESTAMP
+        email: email.map(|s| s.to_string()),
+        created_at: None,
     };
     diesel::insert_into(users::table)
         .values(&new_user)
@@ -33,6 +26,13 @@ pub fn get_users() -> Vec<User> {
     users::table.load::<User>(&mut conn).expect("Errore lettura utenti")
 }
 
+pub fn get_user_by_id(user_id: i32) -> Option<User> {
+    let mut conn = establish_connection();
+    users::table.filter(users::id.eq(user_id))
+        .first::<User>(&mut conn)
+        .ok()
+}
+
 pub fn delete_user(user_id: i32) -> usize {
     let mut conn = establish_connection();
     diesel::delete(users::table.filter(users::id.eq(user_id)))
@@ -41,6 +41,13 @@ pub fn delete_user(user_id: i32) -> usize {
 }
 
 pub fn update_user(user_id: i32, new_name: Option<&str>, new_email: Option<&str>) -> usize {
+    #[derive(AsChangeset)]
+    #[diesel(table_name = users)]
+    struct UpdateUser<'a> {
+        name: Option<&'a str>,
+        email: Option<&'a str>,
+    }
+
     let mut conn = establish_connection();
     let changes = UpdateUser { name: new_name, email: new_email };
     diesel::update(users::table.filter(users::id.eq(user_id)))
@@ -50,13 +57,6 @@ pub fn update_user(user_id: i32, new_name: Option<&str>, new_email: Option<&str>
 }
 
 // ---------------- CATEGORIES ----------------
-#[derive(AsChangeset)]
-#[diesel(table_name = categories)]
-pub struct UpdateCategory<'a> {
-    pub name: Option<&'a str>,
-    pub color: Option<&'a str>,
-}
-
 pub fn create_category(name: &str, color: Option<&str>) -> usize {
     let mut conn = establish_connection();
     let new_category = NewCategory { name: name.to_string(), color: color.map(|s| s.to_string()) };
@@ -73,10 +73,9 @@ pub fn get_categories() -> Vec<Category> {
 
 pub fn get_category_by_id(category_id: i32) -> Option<Category> {
     let mut conn = establish_connection();
-    categories::table
-        .filter(categories::id.eq(category_id))
+    categories::table.filter(categories::id.eq(category_id))
         .first::<Category>(&mut conn)
-        .ok() // restituisce Some(Category) se trovato, None altrimenti
+        .ok()
 }
 
 pub fn delete_category(category_id: i32) -> usize {
@@ -87,6 +86,13 @@ pub fn delete_category(category_id: i32) -> usize {
 }
 
 pub fn update_category(category_id: i32, new_name: Option<&str>, new_color: Option<&str>) -> usize {
+    #[derive(AsChangeset)]
+    #[diesel(table_name = categories)]
+    struct UpdateCategory<'a> {
+        name: Option<&'a str>,
+        color: Option<&'a str>,
+    }
+
     let mut conn = establish_connection();
     let changes = UpdateCategory { name: new_name, color: new_color };
     diesel::update(categories::table.filter(categories::id.eq(category_id)))
@@ -96,19 +102,9 @@ pub fn update_category(category_id: i32, new_name: Option<&str>, new_color: Opti
 }
 
 // ---------------- SOURCES ----------------
-#[derive(AsChangeset)]
-#[diesel(table_name = sources)]
-pub struct UpdateSource<'a> {
-    pub name: Option<&'a str>,
-    pub color: Option<&'a str>,
-}
-
 pub fn create_source(name: &str, color: Option<&str>) -> usize {
     let mut conn = establish_connection();
-    let new_source = NewSource { 
-        name: name.to_string(), 
-        color: color.map(|s| s.to_string())
-    };
+    let new_source = NewSource { name: name.to_string(), color: color.map(|s| s.to_string()) };
     diesel::insert_into(sources::table)
         .values(&new_source)
         .execute(&mut conn)
@@ -117,15 +113,12 @@ pub fn create_source(name: &str, color: Option<&str>) -> usize {
 
 pub fn get_sources() -> Vec<Source> {
     let mut conn = establish_connection();
-    sources::table
-        .load::<Source>(&mut conn)
-        .expect("Errore lettura sources")
+    sources::table.load::<Source>(&mut conn).expect("Errore lettura sources")
 }
 
 pub fn get_source_by_id(source_id: i32) -> Option<Source> {
     let mut conn = establish_connection();
-    sources::table
-        .filter(sources::id.eq(source_id))
+    sources::table.filter(sources::id.eq(source_id))
         .first::<Source>(&mut conn)
         .ok()
 }
@@ -138,11 +131,15 @@ pub fn delete_source(source_id: i32) -> usize {
 }
 
 pub fn update_source(source_id: i32, new_name: Option<&str>, new_color: Option<&str>) -> usize {
+    #[derive(AsChangeset)]
+    #[diesel(table_name = sources)]
+    struct UpdateSource<'a> {
+        name: Option<&'a str>,
+        color: Option<&'a str>,
+    }
+
     let mut conn = establish_connection();
-    let changes = UpdateSource { 
-        name: new_name, 
-        color: new_color
-    };
+    let changes = UpdateSource { name: new_name, color: new_color };
     diesel::update(sources::table.filter(sources::id.eq(source_id)))
         .set(changes)
         .execute(&mut conn)
@@ -150,32 +147,23 @@ pub fn update_source(source_id: i32, new_name: Option<&str>, new_color: Option<&
 }
 
 // ---------------- PRODUCTS ----------------
-#[derive(AsChangeset)]
-#[diesel(table_name = products)]
-pub struct UpdateProduct<'a> {
-    pub name: Option<&'a str>,
-    pub category_id: Option<i32>,
-    pub weight: Option<f64>,
-}
-
-pub fn create_product(name: &str, category_id: i32, weight: Option<f64>) -> usize {
+pub fn create_product(name: &str, color: Option<&str>) -> usize {
     let mut conn = establish_connection();
-    let new_product = NewProduct { name: name.to_string(), category_id, weight };
+    let new_product = NewProduct { name: name.to_string(), color: color.map(|s| s.to_string()) };
     diesel::insert_into(products::table)
         .values(&new_product)
         .execute(&mut conn)
-        .expect("Errore inserimento prodotto")
+        .expect("Errore inserimento product")
 }
 
 pub fn get_products() -> Vec<Product> {
     let mut conn = establish_connection();
-    products::table.load::<Product>(&mut conn).expect("Errore lettura prodotti")
+    products::table.load::<Product>(&mut conn).expect("Errore lettura products")
 }
 
 pub fn get_product_by_id(product_id: i32) -> Option<Product> {
     let mut conn = establish_connection();
-    products::table
-        .filter(products::id.eq(product_id))
+    products::table.filter(products::id.eq(product_id))
         .first::<Product>(&mut conn)
         .ok()
 }
@@ -184,78 +172,37 @@ pub fn delete_product(product_id: i32) -> usize {
     let mut conn = establish_connection();
     diesel::delete(products::table.filter(products::id.eq(product_id)))
         .execute(&mut conn)
-        .expect("Errore eliminazione prodotto")
+        .expect("Errore eliminazione product")
 }
 
-pub fn update_product(product_id: i32, new_name: Option<&str>, new_category_id: Option<i32>, new_weight: Option<f64>) -> usize {
+pub fn update_product(product_id: i32, new_name: Option<&str>, new_color: Option<&str>) -> usize {
+    #[derive(AsChangeset)]
+    #[diesel(table_name = products)]
+    struct UpdateProduct<'a> {
+        name: Option<&'a str>,
+        color: Option<&'a str>,
+    }
+
     let mut conn = establish_connection();
-    let changes = UpdateProduct { name: new_name, category_id: new_category_id, weight: new_weight };
+    let changes = UpdateProduct { name: new_name, color: new_color };
     diesel::update(products::table.filter(products::id.eq(product_id)))
         .set(changes)
         .execute(&mut conn)
-        .expect("Errore aggiornamento prodotto")
-}
-
-// ---------------- MOVEMENT TYPES ----------------
-#[derive(AsChangeset)]
-#[diesel(table_name = movement_types)]
-pub struct UpdateMovementType<'a> {
-    pub name: Option<&'a str>,
-    pub color: Option<&'a str>,
-    pub is_income: Option<bool>,
-}
-
-pub fn create_movement_type(name: &str, color: Option<&str>, is_income: bool) -> usize {
-    let mut conn = establish_connection();
-    let new_type = NewMovementType { name: name.to_string(), color: color.map(|s| s.to_string()), is_income };
-    diesel::insert_into(movement_types::table)
-        .values(&new_type)
-        .execute(&mut conn)
-        .expect("Errore inserimento tipo movimento")
-}
-
-pub fn get_movement_types() -> Vec<MovementType> {
-    let mut conn = establish_connection();
-    movement_types::table.load::<MovementType>(&mut conn).expect("Errore lettura tipi movimento")
-}
-
-pub fn get_movement_type_by_id(type_id: i32) -> Option<MovementType> {
-    let mut conn = establish_connection();
-    movement_types::table
-        .filter(movement_types::id.eq(type_id))
-        .first::<MovementType>(&mut conn)
-        .ok()
-}
-
-pub fn delete_movement_type(type_id: i32) -> usize {
-    let mut conn = establish_connection();
-    diesel::delete(movement_types::table.filter(movement_types::id.eq(type_id)))
-        .execute(&mut conn)
-        .expect("Errore eliminazione tipo movimento")
-}
-
-pub fn update_movement_type(type_id: i32, new_name: Option<&str>, new_color: Option<&str>, new_is_income: Option<bool>) -> usize {
-    let mut conn = establish_connection();
-    let changes = UpdateMovementType { name: new_name, color: new_color, is_income: new_is_income };
-    diesel::update(movement_types::table.filter(movement_types::id.eq(type_id)))
-        .set(changes)
-        .execute(&mut conn)
-        .expect("Errore aggiornamento tipo movimento")
+        .expect("Errore aggiornamento product")
 }
 
 // ---------------- MOVEMENTS ----------------
-#[derive(AsChangeset)]
-#[diesel(table_name = movements)]
-pub struct UpdateMovement<'a> {
-    pub user_id: Option<i32>,
-    pub product_id: Option<i32>,
-    pub type_id: Option<i32>,
-    pub date: Option<&'a str>,
-}
-
-pub fn create_movement(user_id: i32, product_id: i32, type_id: i32, date: Option<&str>) -> usize {
+pub fn create_movement(user_id: i32, product_id: i32, category_id: i32, source_id: i32, weight: Option<f64>, price: Option<f64>) -> usize {
     let mut conn = establish_connection();
-    let new_movement = NewMovement { user_id, product_id, type_id, date: date.map(|s| s.to_string()) };
+    let new_movement = NewMovement {
+        user_id,
+        product_id,
+        category_id,
+        source_id,
+        weight,
+        price,
+        date: None,
+    };
     diesel::insert_into(movements::table)
         .values(&new_movement)
         .execute(&mut conn)
@@ -269,8 +216,7 @@ pub fn get_movements() -> Vec<Movement> {
 
 pub fn get_movements_by_user(user_id: i32) -> Vec<Movement> {
     let mut conn = establish_connection();
-    movements::table
-        .filter(movements::user_id.eq(user_id))
+    movements::table.filter(movements::user_id.eq(user_id))
         .load::<Movement>(&mut conn)
         .expect("Errore lettura movimenti per utente")
 }
@@ -282,14 +228,16 @@ pub fn delete_movement(movement_id: i32) -> usize {
         .expect("Errore eliminazione movimento")
 }
 
-pub fn update_movement(movement_id: i32, new_user_id: Option<i32>, new_product_id: Option<i32>, new_type_id: Option<i32>, new_date: Option<&str>) -> usize {
+pub fn update_movement(movement_id: i32, weight: Option<f64>, price: Option<f64>) -> usize {
+    #[derive(AsChangeset)]
+    #[diesel(table_name = movements)]
+    struct UpdateMovement {
+        weight: Option<f64>,
+        price: Option<f64>,
+    }
+
     let mut conn = establish_connection();
-    let changes = UpdateMovement {
-        user_id: new_user_id,
-        product_id: new_product_id,
-        type_id: new_type_id,
-        date: new_date,
-    };
+    let changes = UpdateMovement { weight, price };
     diesel::update(movements::table.filter(movements::id.eq(movement_id)))
         .set(changes)
         .execute(&mut conn)

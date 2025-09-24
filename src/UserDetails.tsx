@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import UserInfo from './UserInfo';
 import { User } from './types';
+import DeleteUserModal from './DeleteUserModal';
 
 interface UserDetailsProps {
   user: User;
@@ -52,34 +53,12 @@ const UserDetails: React.FC<UserDetailsProps> = ({
       </div>
       <UserInfo user={user} />
       {showDeleteConfirm && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          background: 'rgba(0,0,0,0.25)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{ background: '#fff', borderRadius: 12, padding: '32px 28px', boxShadow: '0 4px 24px rgba(0,0,0,0.18)', minWidth: 320, textAlign: 'center' }}>
-            <div style={{ fontSize: '1.2rem', marginBottom: 18 }}>
-              <div>
-                Sei sicuro di voler eliminare l'utente <b>{user.name}</b>?
-              </div>
-              <div>
-                Questa operazione è irreversibile e tutti i dati collegati all'utente verranno persi.
-              </div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '18px', marginTop: 12 }}>
-              <button className="button-red" onClick={() => { setShowDeleteConfirm(false); onDelete(); }}>Elimina</button>
-              <button className="button" onClick={() => setShowDeleteConfirm(false)}>Annulla</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteUserModal
+        userName={user.name}
+        onDelete={() => { onDelete(); setShowDeleteConfirm(false); }}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
+    )}
     </div>
   );
 };

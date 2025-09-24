@@ -1,3 +1,4 @@
+// @generated automatically by Diesel CLI o scritto a mano
 diesel::table! {
     users (id) {
         id -> Integer,
@@ -27,17 +28,7 @@ diesel::table! {
     products (id) {
         id -> Integer,
         name -> Text,
-        category_id -> Integer,
-        weight -> Nullable<Double>,
-    }
-}
-
-diesel::table! {
-    movement_types (id) {
-        id -> Integer,
-        name -> Text,
         color -> Nullable<Text>,
-        is_income -> Bool,
     }
 }
 
@@ -46,20 +37,24 @@ diesel::table! {
         id -> Integer,
         user_id -> Integer,
         product_id -> Integer,
-        type_id -> Integer,
+        category_id -> Integer,
+        source_id -> Integer,
+        weight -> Nullable<Double>,
+        price -> Nullable<Double>,
         date -> Nullable<Text>,
     }
 }
 
-diesel::joinable!(products -> categories (category_id));
+// Definizione delle relazioni (joinable!)
 diesel::joinable!(movements -> users (user_id));
 diesel::joinable!(movements -> products (product_id));
-diesel::joinable!(movements -> movement_types (type_id));
+diesel::joinable!(movements -> categories (category_id));
+diesel::joinable!(movements -> sources (source_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     users,
     categories,
+    sources,
     products,
-    movement_types,
     movements,
 );
