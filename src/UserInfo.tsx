@@ -8,7 +8,7 @@ interface UserInfoProps {
   user: User;
 }
 
-const UserInfo: React.FC<UserInfoProps> = ({ user }) => {
+const UserInfo: React.FC<UserInfoProps> = ({ }) => {
   const [activeTab, setActiveTab] = useState("tab1");
 
   const tabs = ["Gestione", "Statistiche", "Esportazioni"];
