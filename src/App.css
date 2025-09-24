@@ -29,41 +29,68 @@
     background-color: #2f855a;
     transform: translateY(-2px);
 }
+
 .user-actions-dropdown {
-    position: absolute;
-    top: 45px;
-    left: 0;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-    width: 210px;
-    z-index: 10;
-    padding: 8px 0;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+  position: absolute; /* meglio absolute per staccarlo dal bottone */
+  top: 80px;
+  left: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  width: 230px;
+  z-index: 100;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* per bordi stondati puliti */
+  animation: fadeInScale 0.15s ease-out;
 }
 
 .user-actions-dropdown .dropdown-btn {
-    background: none;
-    border: none;
-    color: #4a4a4a;
-    font-size: 1rem;
-    text-align: left;
-    padding: 12px 22px;
-    cursor: pointer;
-    transition: background 0.2s;
-    border-radius: 0;
+  background: none;
+  border: none;
+  color: #374151;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: left;
+  padding: 14px 20px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.user-actions-dropdown .dropdown-btn + .dropdown-btn {
+  border-top: 1px solid #f0f0f0; /* separatore sottile */
 }
 
 .user-actions-dropdown .dropdown-btn:hover {
-    background: #f3f4f6;
+  background: #e6f2ff; /* azzurrino soft */
+  color: #1e3a8a; /* blu più scuro */
 }
 
 .user-actions-dropdown .dropdown-btn.delete {
-    color: #e53e3e;
+  color: #dc2626;
+  font-weight: 600;
 }
+
+.user-actions-dropdown .dropdown-btn.delete:hover {
+  background: #fee2e2; /* rosso molto chiaro */
+  color: #b91c1c;
+}
+
+/* Effetto comparsa */
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
 .back-btn-alt {
     background-color: #e2e8f0;
     color: #667eea;
