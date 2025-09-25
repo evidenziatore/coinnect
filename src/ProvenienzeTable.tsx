@@ -1,11 +1,23 @@
-import React from "react";
+import React, { useMemo } from "react";
 import FilterableTable from "./FilterableTable";
+import { Source } from "./types";
 
-const ProvenienzeTable: React.FC = () => {
-  const data = [
-    { Nome: "Italia", Colore: "Azzurro" },
-    { Nome: "Germania", Colore: "Grigio" },
-  ];
+interface ProvenienzaTableProps {
+  fetchFromDb: () => void,
+  sources: Source[],
+}
+
+const ProvenienzeTable: React.FC<ProvenienzaTableProps> = (
+  { fetchFromDb, sources }
+) => {
+  const data = useMemo(
+    () =>
+    sources.map(s => ({
+      Nome: s.name ?? "",
+      Colore: s?.color ?? "",
+    })),
+    [sources] // si ricrea solo se cambia products
+  );
 
   const columns = ["Nome", "Colore"];
 

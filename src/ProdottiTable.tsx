@@ -1,11 +1,23 @@
-import React from "react";
+import React, { useMemo } from "react";
 import FilterableTable from "./FilterableTable";
+import { Product } from "./types";
 
-const ProdottiTable: React.FC = () => {
-  const data = [
-    { Nome: "Prodotto A", Colore: "Rosso" },
-    { Nome: "Prodotto B", Colore: "Blu" },
-  ];
+interface ProdottiTableProps {
+  fetchFromDb: () => void,
+  products: Product[],
+}
+
+const ProdottiTable: React.FC<ProdottiTableProps> = (
+  { fetchFromDb, products }
+) => {
+  const data = useMemo(
+    () =>
+      products.map(p => ({
+        Nome: p.name ?? "",
+        Colore: p.color ?? "",
+      })),
+    [products] // si ricrea solo se cambia products
+  );
 
   const columns = ["Nome", "Colore"];
 

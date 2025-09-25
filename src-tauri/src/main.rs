@@ -117,8 +117,8 @@ fn edit_product(id: i32, name: Option<String>, color: Option<String>) -> usize {
 
 // ---------------- MOVEMENTS ----------------
 #[tauri::command]
-fn add_movement(user_id: i32, product_id: i32, category_id: i32, source_id: i32, weight: Option<f64>, price: Option<f64>) {
-    create_movement(user_id, product_id, category_id, source_id, weight, price);
+fn add_movement(userid: i32, productid: i32, categoryid: i32, sourceid: i32, weight: Option<f64>, price: Option<f64>) {
+    create_movement(userid, productid, categoryid, sourceid, weight, price);
 }
 
 #[tauri::command]
@@ -127,8 +127,8 @@ fn list_movements() -> Vec<Movement> {
 }
 
 #[tauri::command]
-fn list_movements_by_user(user_id: i32) -> Vec<Movement> {
-    get_movements_by_user(user_id)
+fn list_movements_by_user(userid: i32) -> Vec<Movement> {
+    get_movements_by_user(userid)
 }
 
 #[tauri::command]

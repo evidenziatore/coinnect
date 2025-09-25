@@ -1,15 +1,42 @@
-import React, { useState } from 'react';
-import { User } from './types';
+import React, { useEffect, useState } from 'react';
+import { Category, Movement, Product, Source, User } from './types';
 import EsportazioniContent from './EsportazioniContent';
 import GestioneContent from './GestioneContent';
 import StatisticheContent from './StatisticheContent';
+import { invoke } from '@tauri-apps/api/core';
 
 interface UserInfoProps {
   user: User;
 }
 
-const UserInfo: React.FC<UserInfoProps> = ({ }) => {
+const UserInfo: React.FC<UserInfoProps> = ({ user}) => {
   const [activeTab, setActiveTab] = useState("tab1");
+  const [movements, setMovements] = useState<Movement[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [sources, setSources] = useState<Source[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  const fetchMovements = async () => {
+    const categories = (await invoke<Category[]>('list_categories')) || [];
+    setCategories(categories);
+
+    const sources = (await invoke<Source[]>('list_sources')) || [];
+    setSources(sources);
+
+    const products = (await invoke<Product[]>('list_products')) || [];
+    setProducts(products);
+
+    let movements = (await invoke<Movement[]>('list_movements_by_user', { userid: user.id })) || [];
+    movements = movements.map(m => ({
+      ...m,
+      category: categories.find(c => c.id === m.category_id),
+      source: sources.find(s => s.id === m.source_id),
+      product: products.find(p => p.id === m.product_id),
+    }));
+    setMovements(movements);
+  };
+
+  useEffect(() => { fetchMovements(); }, []);
 
   const tabs = ["Gestione", "Statistiche", "Esportazioni"];
 
@@ -78,7 +105,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ }) => {
             boxSizing: "border-box",
           }}
         >
-          {activeTab === "tab1" && <GestioneContent />}
+          {activeTab === "tab1" && <GestioneContent fetchFromDb={fetchMovements} movements={movements} categories={categories} sources={sources} products={products} />}
           {activeTab === "tab2" && <StatisticheContent />}
           {activeTab === "tab3" && <EsportazioniContent />}
         </div>

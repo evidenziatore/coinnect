@@ -3,6 +3,7 @@ import CategorieTable from "./CategorieTable";
 import MovimentiTable from "./MovimentiTable";
 import ProdottiTable from "./ProdottiTable";
 import ProvenienzeTable from "./ProvenienzeTable";
+import { Category, Movement, Product, Source } from "./types";
 const tabs = [
   { key: "movimenti", label: "Movimenti" },
   { key: "prodotti", label: "Prodotti" },
@@ -10,7 +11,17 @@ const tabs = [
   { key: "provenienze", label: "Provenienze" },
 ];
 
-const GestioneContent: React.FC = () => {
+interface GestioneContentProps {
+  fetchFromDb: () => void,
+  movements: Movement[],
+  categories: Category[],
+  sources: Source[],
+  products: Product[],
+}
+
+const GestioneContent: React.FC<GestioneContentProps> = (
+  { fetchFromDb, movements, categories, sources, products }
+) => {
   const [activeTab, setActiveTab] = useState("movimenti");
 
   return (
@@ -44,10 +55,10 @@ const GestioneContent: React.FC = () => {
 
       {/* Contenuto */}
       <div>
-        {activeTab === "movimenti" && <MovimentiTable />}
-        {activeTab === "prodotti" && <ProdottiTable />}
-        {activeTab === "categorie" && <CategorieTable />}
-        {activeTab === "provenienze" && <ProvenienzeTable />}
+        {activeTab === "movimenti" && <MovimentiTable fetchFromDb={fetchFromDb} movements={movements} />}
+        {activeTab === "prodotti" && <ProdottiTable fetchFromDb={fetchFromDb} products={products} />}
+        {activeTab === "categorie" && <CategorieTable fetchFromDb={fetchFromDb} categories={categories} />}
+        {activeTab === "provenienze" && <ProvenienzeTable fetchFromDb={fetchFromDb} sources={sources} />}
       </div>
     </div>
   );
