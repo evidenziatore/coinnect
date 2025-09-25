@@ -21,7 +21,19 @@ const ProvenienzeTable: React.FC<ProvenienzaTableProps> = (
 
   const columns = ["Nome", "Colore"];
 
-  return <FilterableTable data={data} columns={columns} />;
+  const onEdit = async () => {
+    fetchFromDb();
+  };
+
+  const onDelete = async () => {
+    fetchFromDb();
+  };
+
+  const onAdd = async () => {
+    fetchFromDb();
+  };
+
+  return <FilterableTable data={data} columns={columns} onEdit={onEdit} onDelete={onDelete} onAdd={onAdd} />;
 };
 
 export default ProvenienzeTable;

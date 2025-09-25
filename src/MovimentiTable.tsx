@@ -25,7 +25,19 @@ const MovimentiTable: React.FC<MovimentiTableProps> = (
 
   const columns = ["Prodotto", "Categoria", "Provenienza", "Prezzo", "Peso", "Data"];
 
-  return <FilterableTable data={data} columns={columns} />;
+  const onEdit = async () => {
+    fetchFromDb();
+  };
+
+  const onDelete = async () => {
+    fetchFromDb();
+  };
+
+  const onAdd = async () => {
+    fetchFromDb();
+  };
+
+  return <FilterableTable data={data} columns={columns} onEdit={onEdit} onDelete={onDelete} onAdd={onAdd} />;
 };
 
 export default MovimentiTable;
