@@ -259,6 +259,7 @@ const FilterableTable: React.FC<FilterableTableProps> = ({
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          position: "relative",
           gap: "20px",
         }}
       >
@@ -273,13 +274,21 @@ const FilterableTable: React.FC<FilterableTableProps> = ({
               color: "#3b82f6",
               cursor: "pointer",
               fontWeight: "bold",
+              position: "absolute",
+              left: 0,
             }}
           >
             ◀ Precedente
           </button>
         )}
 
-        <span style={{ fontSize: "14px", color: "#1e3a8a", fontWeight: "bold" }}>
+        <span
+          style={{
+            fontSize: "14px",
+            color: "#1e3a8a",
+            fontWeight: "bold",
+          }}
+        >
           Pagina {currentPage} di {totalPages}
         </span>
 
@@ -294,6 +303,8 @@ const FilterableTable: React.FC<FilterableTableProps> = ({
               color: "#3b82f6",
               cursor: "pointer",
               fontWeight: "bold",
+              position: "absolute",
+              right: 0,
             }}
           >
             Successiva ▶
