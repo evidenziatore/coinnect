@@ -42,7 +42,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ }) => {
                 borderTopLeftRadius: isActive ? (index === 0 ? "24px" : "0px") : "0",
                 borderBottomLeftRadius: isActive ? (index === tabs.length - 1 ? "24px" : "0px") : "0",
                 backgroundColor: isActive ? "#cce8ff" : "#d1d5db",
-                color: isActive ? "white" : "black",
+                color: isActive ? "#2563eb" : "black",
                 border: "none",
                 cursor: "pointer",
                 fontSize: "18px",
