@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import FilterableTable, { TableData } from "./FilterableTable";
 import AzioniBase, { ActionType, FieldConfig } from "./AzioniBase";
 import { Category } from "./types";
+import { invoke } from "@tauri-apps/api/core";
 
 interface CategorieTableProps {
   fetchFromDb: () => void;
@@ -35,9 +36,20 @@ const CategorieTable: React.FC<CategorieTableProps> = ({ fetchFromDb, categories
     setModalAction("delete");
   };
 
-  const handleConfirm = (values: Record<string, any>) => {
-    fetchFromDb();
-    setModalAction(null);
+  const handleConfirm = async (values: Record<string, any>) => {
+    try {
+      if (modalAction === "add") {
+        await invoke("add_category", { name: values.name, color: values.color });
+      } else if (modalAction === "edit" && selectedCategory) {
+        await invoke("edit_category", { id: selectedCategory.id, name: values.name, color: values.color });
+      } else if (modalAction === "delete" && selectedCategory) {
+        await invoke("remove_category", { id: selectedCategory.id });
+      }
+      fetchFromDb();
+      setModalAction(null);
+    } catch (error) {
+      console.error("Errore Tauri:", error);
+    }
   };
 
   const fields: FieldConfig[] = [

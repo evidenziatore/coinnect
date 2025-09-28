@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import FilterableTable, { TableData } from "./FilterableTable";
 import AzioniBase, { ActionType, FieldConfig } from "./AzioniBase";
 import { Movement } from "./types";
+import { invoke } from "@tauri-apps/api/core";
 
 interface MovimentiTableProps {
   fetchFromDb: () => void;
@@ -54,9 +55,31 @@ const MovimentiTable: React.FC<MovimentiTableProps> = ({ fetchFromDb, movements 
     setModalAction("delete");
   };
 
-  const handleConfirm = (values: Record<string, any>) => {
-    fetchFromDb();
-    setModalAction(null);
+  const handleConfirm = async (values: Record<string, any>) => {
+    try {
+      if (modalAction === "add") {
+        await invoke("add_movement", {
+          userid: 0, // sostituire con l’ID utente selezionato
+          productid: 0, // sostituire con ID prodotto corretto
+          categoryid: 0, // sostituire con ID categoria corretta
+          sourceid: 0, // sostituire con ID provenienza corretta
+          weight: values.weight,
+          price: values.price,
+        });
+      } else if (modalAction === "edit" && selectedMovement) {
+        await invoke("edit_movement", {
+          id: selectedMovement.id,
+          weight: values.weight,
+          price: values.price,
+        });
+      } else if (modalAction === "delete" && selectedMovement) {
+        await invoke("remove_movement", { id: selectedMovement.id });
+      }
+      fetchFromDb();
+      setModalAction(null);
+    } catch (error) {
+      console.error("Errore Tauri:", error);
+    }
   };
 
   const fields: FieldConfig[] = [

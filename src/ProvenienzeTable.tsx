@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import FilterableTable, { TableData } from "./FilterableTable";
 import AzioniBase, { ActionType, FieldConfig } from "./AzioniBase";
 import { Source } from "./types";
+import { invoke } from "@tauri-apps/api/core";
 
 interface ProvenienzeTableProps {
   fetchFromDb: () => void;
@@ -35,9 +36,20 @@ const ProvenienzeTable: React.FC<ProvenienzeTableProps> = ({ fetchFromDb, source
     setModalAction("delete");
   };
 
-  const handleConfirm = (values: Record<string, any>) => {
-    fetchFromDb();
-    setModalAction(null);
+  const handleConfirm = async (values: Record<string, any>) => {
+    try {
+      if (modalAction === "add") {
+        await invoke("add_source", { name: values.name, color: values.color });
+      } else if (modalAction === "edit" && selectedSource) {
+        await invoke("edit_source", { id: selectedSource.id, name: values.name, color: values.color });
+      } else if (modalAction === "delete" && selectedSource) {
+        await invoke("remove_source", { id: selectedSource.id });
+      }
+      fetchFromDb();
+      setModalAction(null);
+    } catch (error) {
+      console.error("Errore Tauri:", error);
+    }
   };
 
   const fields: FieldConfig[] = [

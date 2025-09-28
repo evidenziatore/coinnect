@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import FilterableTable, { TableData } from "./FilterableTable";
 import AzioniBase, { ActionType, FieldConfig } from "./AzioniBase";
 import { Product } from "./types";
+import { invoke } from "@tauri-apps/api/core";
 
 interface ProdottiTableProps {
   fetchFromDb: () => void;
@@ -35,10 +36,20 @@ const ProdottiTable: React.FC<ProdottiTableProps> = ({ fetchFromDb, products }) 
     setModalAction("delete");
   };
 
-  const handleConfirm = (values: Record<string, any>) => {
-    // Qui puoi chiamare createProduct/updateProduct/deleteProduct
-    fetchFromDb();
-    setModalAction(null);
+  const handleConfirm = async (values: Record<string, any>) => {
+    try {
+      if (modalAction === "add") {
+        await invoke("add_product", { name: values.name, color: values.color });
+      } else if (modalAction === "edit" && selectedProduct) {
+        await invoke("edit_product", { id: selectedProduct.id, name: values.name, color: values.color });
+      } else if (modalAction === "delete" && selectedProduct) {
+        await invoke("remove_product", { id: selectedProduct.id });
+      }
+      fetchFromDb();
+      setModalAction(null);
+    } catch (error) {
+      console.error("Errore Tauri:", error);
+    }
   };
 
   const fields: FieldConfig[] = [
