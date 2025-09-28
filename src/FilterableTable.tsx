@@ -72,6 +72,22 @@ const FilterableTable: React.FC<FilterableTableProps> = ({
 
   const formatCell = (col: string, value: string | number | Date | null | undefined) => {
     if (value === null || value === undefined) return "";
+
+    // Se la colonna contiene "Colore", mostra quadratino
+    if (col.toLowerCase().includes("colore") && typeof value === "string") {
+      return (
+        <div
+          style={{
+            width: 20,
+            height: 20,
+            borderRadius: 4,
+            backgroundColor: value,
+            border: "1px solid #ccc",
+          }}
+        />
+      );
+    }
+
     if (col.toLowerCase().includes("date")) {
       const date = new Date(value);
       if (!isNaN(date.getTime())) {
@@ -82,11 +98,13 @@ const FilterableTable: React.FC<FilterableTableProps> = ({
         });
       }
     }
+
     return String(value);
   };
 
   return (
     <div style={{ width: "100%" }}>
+      {/* Filtro e pulsante aggiungi */}
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12, gap: 12, flexWrap: "wrap" }}>
         <input
           type="text"
@@ -105,15 +123,21 @@ const FilterableTable: React.FC<FilterableTableProps> = ({
         )}
       </div>
 
+      {/* Numero record */}
       <div style={{ marginBottom: 10, fontSize: 14, color: "#1e3a8a" }}>
         Record trovati: <strong>{filteredData.length}</strong>
       </div>
 
+      {/* Tabella */}
       <table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "white", borderRadius: 12, overflow: "hidden" }}>
         <thead>
           <tr style={{ backgroundColor: "#f3f4f6" }}>
             {columns.map((col) => (
-              <th key={col} onClick={() => handleSort(col)} style={{ padding: 12, textAlign: "left", borderBottom: "2px solid #e5e7eb", fontWeight: "bold", color: "#1e3a8a", cursor: "pointer", userSelect: "none" }}>
+              <th
+                key={col}
+                onClick={() => handleSort(col)}
+                style={{ padding: 12, textAlign: "left", borderBottom: "2px solid #e5e7eb", fontWeight: "bold", color: "#1e3a8a", cursor: "pointer", userSelect: "none" }}
+              >
                 {col} {sortColumn === col && (sortDirection === "asc" ? "▲" : "▼")}
               </th>
             ))}
@@ -124,15 +148,27 @@ const FilterableTable: React.FC<FilterableTableProps> = ({
           {paginatedData.map((row, i) => (
             <tr key={i} style={{ borderBottom: "1px solid #e5e7eb", backgroundColor: i % 2 === 0 ? "#fff" : "#f9fafb" }}>
               {columns.map((col) => (
-                <td key={col} style={{ padding: 10, textAlign: "left", color: "#1e3a8a" }}>{formatCell(col, row[col])}</td>
+                <td key={col} style={{ padding: 10, textAlign: "left", color: "#1e3a8a" }}>
+                  {formatCell(col, row[col])}
+                </td>
               ))}
               {(onEdit || onDelete) && (
                 <td style={{ textAlign: "left", padding: 10, display: "flex", gap: 6 }}>
                   {onEdit && (
-                    <button onClick={() => onEdit(row)} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid #3b82f6", backgroundColor: "#fff", color: "#3b82f6", cursor: "pointer", fontWeight: "bold" }}>Modifica</button>
+                    <button
+                      onClick={() => onEdit(row)}
+                      style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid #3b82f6", backgroundColor: "#fff", color: "#3b82f6", cursor: "pointer", fontWeight: "bold" }}
+                    >
+                      Modifica
+                    </button>
                   )}
                   {onDelete && (
-                    <button onClick={() => onDelete(row)} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid #ef4444", backgroundColor: "#fff", color: "#ef4444", cursor: "pointer", fontWeight: "bold" }}>Elimina</button>
+                    <button
+                      onClick={() => onDelete(row)}
+                      style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid #ef4444", backgroundColor: "#fff", color: "#ef4444", cursor: "pointer", fontWeight: "bold" }}
+                    >
+                      Elimina
+                    </button>
                   )}
                 </td>
               )}
@@ -140,19 +176,26 @@ const FilterableTable: React.FC<FilterableTableProps> = ({
           ))}
           {paginatedData.length === 0 && (
             <tr>
-              <td colSpan={columns.length + ((onEdit || onDelete) ? 1 : 0)} style={{ padding: 12, textAlign: "center", color: "#6b7280" }}>Nessun risultato trovato</td>
+              <td colSpan={columns.length + ((onEdit || onDelete) ? 1 : 0)} style={{ padding: 12, textAlign: "center", color: "#6b7280" }}>
+                Nessun risultato trovato
+              </td>
             </tr>
           )}
         </tbody>
       </table>
 
+      {/* Paginazione */}
       <div style={{ marginTop: 16, display: "flex", justifyContent: "center", alignItems: "center", gap: 20, position: "relative" }}>
         {currentPage > 1 && (
-          <button onClick={() => setCurrentPage((p) => p - 1)} style={{ padding: "8px 16px", borderRadius: 6, border: "1px solid #3b82f6", backgroundColor: "#fff", color: "#3b82f6", cursor: "pointer", fontWeight: "bold", position: "absolute", left: 0 }}>◀ Precedente</button>
+          <button onClick={() => setCurrentPage((p) => p - 1)} style={{ padding: "8px 16px", borderRadius: 6, border: "1px solid #3b82f6", backgroundColor: "#fff", color: "#3b82f6", cursor: "pointer", fontWeight: "bold", position: "absolute", left: 0 }}>
+            ◀ Precedente
+          </button>
         )}
         <span style={{ fontSize: 14, color: "#1e3a8a", fontWeight: "bold" }}>Pagina {currentPage} di {totalPages}</span>
         {currentPage < totalPages && (
-          <button onClick={() => setCurrentPage((p) => p + 1)} style={{ padding: "8px 16px", borderRadius: 6, border: "1px solid #3b82f6", backgroundColor: "#fff", color: "#3b82f6", cursor: "pointer", fontWeight: "bold", position: "absolute", right: 0 }}>Successiva ▶</button>
+          <button onClick={() => setCurrentPage((p) => p + 1)} style={{ padding: "8px 16px", borderRadius: 6, border: "1px solid #3b82f6", backgroundColor: "#fff", color: "#3b82f6", cursor: "pointer", fontWeight: "bold", position: "absolute", right: 0 }}>
+            Successiva ▶
+          </button>
         )}
       </div>
     </div>

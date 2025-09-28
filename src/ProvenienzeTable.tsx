@@ -54,7 +54,7 @@ const ProvenienzeTable: React.FC<ProvenienzeTableProps> = ({ fetchFromDb, source
 
   const fields: FieldConfig[] = [
     { key: "name", label: "Nome", value: selectedSource?.name },
-    { key: "color", label: "Colore", value: selectedSource?.color },
+    { key: "color", label: "Colore", type: "color", value: selectedSource?.color },
   ];
 
   return (

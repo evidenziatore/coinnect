@@ -54,7 +54,7 @@ const CategorieTable: React.FC<CategorieTableProps> = ({ fetchFromDb, categories
 
   const fields: FieldConfig[] = [
     { key: "name", label: "Nome", value: selectedCategory?.name },
-    { key: "color", label: "Colore", value: selectedCategory?.color },
+    { key: "color", label: "Colore", type: "color", value: selectedCategory?.color },
   ];
 
   return (

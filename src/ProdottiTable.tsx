@@ -54,7 +54,7 @@ const ProdottiTable: React.FC<ProdottiTableProps> = ({ fetchFromDb, products }) 
 
   const fields: FieldConfig[] = [
     { key: "name", label: "Nome", value: selectedProduct?.name },
-    { key: "color", label: "Colore", value: selectedProduct?.color },
+    { key: "color", label: "Colore", type: "color", value: selectedProduct?.color },
   ];
 
   return (

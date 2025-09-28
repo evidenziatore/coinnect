@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { HexColorPicker } from "react-colorful";
 
 export type ActionType = "add" | "edit" | "delete";
 
@@ -10,7 +11,7 @@ interface FieldOption {
 export interface FieldConfig {
   key: string;
   label: string;
-  type?: "text" | "number" | "date" | "select";
+  type?: "text" | "number" | "date" | "select" | "color";
   placeholder?: string;
   value?: string | number;
   options?: FieldOption[];
@@ -40,23 +41,26 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
   };
 
   const { title, confirm } = actionLabels[actionType];
-
   const [values, setValues] = useState<Record<string, any>>({});
+  const [colorPickersOpen, setColorPickersOpen] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const initialValues: Record<string, any> = {};
+    const initialPickers: Record<string, boolean> = {};
     fields.forEach((f) => {
-      if (actionType === "add" && f.type === "select") {
-        initialValues[f.key] = ""; // select vuota in modalità add
-      } else {
-        initialValues[f.key] = f.value ?? "";
-      }
+      initialValues[f.key] = f.value ?? (f.type === "color" ? "#000000" : "");
+      if (f.type === "color") initialPickers[f.key] = false;
     });
     setValues(initialValues);
+    setColorPickersOpen(initialPickers);
   }, [fields, actionType]);
 
   const handleChange = (key: string, value: any) => {
     setValues((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const toggleColorPicker = (key: string) => {
+    setColorPickersOpen((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   return (
@@ -103,22 +107,37 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
             </label>
 
             {actionType === "delete" ? (
-              <span
-                style={{
-                  padding: "8px",
-                  borderRadius: "6px",
-                  border: "1px solid #ccc",
-                  backgroundColor: "#f3f3f3",
-                  display: "inline-block",
-                  width: "100%",
-                }}
-              >
-                {f.type === "select" && f.options
-                  ? f.options.find(
-                      (opt) => String(opt.value) === String(values[f.key])
-                    )?.label
-                  : String(values[f.key])}
-              </span>
+              f.type === "color" ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 4,
+                      border: "1px solid #ccc",
+                      backgroundColor: values[f.key] || "#000000",
+                    }}
+                  />
+                  <span>{values[f.key]}</span>
+                </div>
+              ) : (
+                <span
+                  style={{
+                    padding: "8px",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc",
+                    backgroundColor: "#f3f3f3",
+                    display: "inline-block",
+                    width: "100%",
+                  }}
+                >
+                  {f.type === "select" && f.options
+                    ? f.options.find(
+                        (opt) => String(opt.value) === String(values[f.key])
+                      )?.label
+                    : String(values[f.key])}
+                </span>
+              )
             ) : f.type === "select" && f.options ? (
               <select
                 value={values[f.key]}
@@ -138,6 +157,37 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
                   </option>
                 ))}
               </select>
+            ) : f.type === "color" ? (
+              <div style={{ position: "relative" }}>
+                <button
+                  type="button"
+                  onClick={() => toggleColorPicker(f.key)}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 4,
+                    border: "1px solid #ccc",
+                    backgroundColor: values[f.key] || "#000000",
+                    cursor: "pointer",
+                  }}
+                />
+                <span style={{ marginLeft: 8 }}>{values[f.key]}</span>
+                {colorPickersOpen[f.key] && (
+                  <div
+                    style={{
+                      position: "relative",
+                      zIndex: 100,
+                      marginTop: 20,   // spazio sopra
+                      marginBottom: 20 // spazio sotto
+                    }}
+                  >
+                    <HexColorPicker
+                      color={values[f.key]}
+                      onChange={(color: string) => handleChange(f.key, color)}
+                    />
+                  </div>
+                )}
+              </div>
             ) : (
               <input
                 type={f.type ?? "text"}
