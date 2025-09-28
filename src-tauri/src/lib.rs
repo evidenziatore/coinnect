@@ -37,7 +37,7 @@ pub fn delete_user(user_id: i32) -> usize {
     let mut conn = establish_connection();
     diesel::delete(users::table.filter(users::id.eq(user_id)))
         .execute(&mut conn)
-        .expect("Errore eliminazione utente")
+        .unwrap_or(0)
 }
 
 pub fn update_user(user_id: i32, new_name: Option<&str>, new_email: Option<&str>) -> usize {
@@ -82,7 +82,7 @@ pub fn delete_category(category_id: i32) -> usize {
     let mut conn = establish_connection();
     diesel::delete(categories::table.filter(categories::id.eq(category_id)))
         .execute(&mut conn)
-        .expect("Errore eliminazione categoria")
+        .unwrap_or(0)
 }
 
 pub fn update_category(category_id: i32, new_name: Option<&str>, new_color: Option<&str>) -> usize {
@@ -127,7 +127,7 @@ pub fn delete_source(source_id: i32) -> usize {
     let mut conn = establish_connection();
     diesel::delete(sources::table.filter(sources::id.eq(source_id)))
         .execute(&mut conn)
-        .expect("Errore eliminazione source")
+        .unwrap_or(0)
 }
 
 pub fn update_source(source_id: i32, new_name: Option<&str>, new_color: Option<&str>) -> usize {
@@ -172,7 +172,7 @@ pub fn delete_product(product_id: i32) -> usize {
     let mut conn = establish_connection();
     diesel::delete(products::table.filter(products::id.eq(product_id)))
         .execute(&mut conn)
-        .expect("Errore eliminazione product")
+        .unwrap_or(0)
 }
 
 pub fn update_product(product_id: i32, new_name: Option<&str>, new_color: Option<&str>) -> usize {
@@ -225,7 +225,7 @@ pub fn delete_movement(movement_id: i32) -> usize {
     let mut conn = establish_connection();
     diesel::delete(movements::table.filter(movements::id.eq(movement_id)))
         .execute(&mut conn)
-        .expect("Errore eliminazione movimento")
+        .unwrap_or(0)
 }
 
 pub fn update_movement(
