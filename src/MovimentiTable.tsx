@@ -1,15 +1,26 @@
 import React, { useMemo, useState } from "react";
 import FilterableTable, { TableData } from "./FilterableTable";
 import AzioniBase, { ActionType, FieldConfig } from "./AzioniBase";
-import { Movement } from "./types";
+import { Movement, Product, Category, Source } from "./types";
 import { invoke } from "@tauri-apps/api/core";
 
 interface MovimentiTableProps {
   fetchFromDb: () => void;
   movements: Movement[];
+  products: Product[];
+  categories: Category[];
+  sources: Source[];
+  userid: number;
 }
 
-const MovimentiTable: React.FC<MovimentiTableProps> = ({ fetchFromDb, movements }) => {
+const MovimentiTable: React.FC<MovimentiTableProps> = ({
+  fetchFromDb,
+  movements,
+  products,
+  categories,
+  sources,
+  userid,
+}) => {
   const [modalAction, setModalAction] = useState<ActionType | null>(null);
   const [selectedMovement, setSelectedMovement] = useState<Movement | null>(null);
 
@@ -39,8 +50,8 @@ const MovimentiTable: React.FC<MovimentiTableProps> = ({ fetchFromDb, movements 
         (m.product?.name ?? "") === row.Prodotto &&
         (m.category?.name ?? "") === row.Categoria &&
         (m.source?.name ?? "") === row.Provenienza
-    ) ?? null;
-    setSelectedMovement(movement);
+    );
+    setSelectedMovement(movement ?? null);
     setModalAction("edit");
   };
 
@@ -50,8 +61,8 @@ const MovimentiTable: React.FC<MovimentiTableProps> = ({ fetchFromDb, movements 
         (m.product?.name ?? "") === row.Prodotto &&
         (m.category?.name ?? "") === row.Categoria &&
         (m.source?.name ?? "") === row.Provenienza
-    ) ?? null;
-    setSelectedMovement(movement);
+    );
+    setSelectedMovement(movement ?? null);
     setModalAction("delete");
   };
 
@@ -59,18 +70,18 @@ const MovimentiTable: React.FC<MovimentiTableProps> = ({ fetchFromDb, movements 
     try {
       if (modalAction === "add") {
         await invoke("add_movement", {
-          userid: 0, // sostituire con l’ID utente selezionato
-          productid: 0, // sostituire con ID prodotto corretto
-          categoryid: 0, // sostituire con ID categoria corretta
-          sourceid: 0, // sostituire con ID provenienza corretta
-          weight: values.weight,
-          price: values.price,
+          userid: userid,
+          productid: Number(values.product),
+          categoryid: Number(values.category),
+          sourceid: Number(values.source),
+          weight: Number(values.weight),
+          price: Number(values.price),
         });
       } else if (modalAction === "edit" && selectedMovement) {
         await invoke("edit_movement", {
           id: selectedMovement.id,
-          weight: values.weight,
-          price: values.price,
+          weight: Number(values.weight),
+          price: Number(values.price),
         });
       } else if (modalAction === "delete" && selectedMovement) {
         await invoke("remove_movement", { id: selectedMovement.id });
@@ -83,9 +94,27 @@ const MovimentiTable: React.FC<MovimentiTableProps> = ({ fetchFromDb, movements 
   };
 
   const fields: FieldConfig[] = [
-    { key: "product", label: "Prodotto", value: selectedMovement?.product?.name },
-    { key: "category", label: "Categoria", value: selectedMovement?.category?.name },
-    { key: "source", label: "Provenienza", value: selectedMovement?.source?.name },
+    {
+      key: "product",
+      label: "Prodotto",
+      type: "select",
+      value: selectedMovement?.product?.id,
+      options: products.map((p) => ({ label: p.name, value: p.id })),
+    },
+    {
+      key: "category",
+      label: "Categoria",
+      type: "select",
+      value: selectedMovement?.category?.id,
+      options: categories.map((c) => ({ label: c.name, value: c.id })),
+    },
+    {
+      key: "source",
+      label: "Provenienza",
+      type: "select",
+      value: selectedMovement?.source?.id,
+      options: sources.map((s) => ({ label: s.name, value: s.id })),
+    },
     { key: "weight", label: "Peso", type: "number", value: selectedMovement?.weight },
     { key: "price", label: "Prezzo", type: "number", value: selectedMovement?.price },
     { key: "date", label: "Data", type: "date", value: selectedMovement?.date },
@@ -93,7 +122,13 @@ const MovimentiTable: React.FC<MovimentiTableProps> = ({ fetchFromDb, movements 
 
   return (
     <>
-      <FilterableTable data={data} columns={columns} onAdd={handleAdd} onEdit={handleEdit} onDelete={handleDelete} />
+      <FilterableTable
+        data={data}
+        columns={columns}
+        onAdd={handleAdd}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
       {modalAction && (
         <AzioniBase
           actionType={modalAction}

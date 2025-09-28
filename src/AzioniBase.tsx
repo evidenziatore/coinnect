@@ -1,41 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export type ActionType = "add" | "edit" | "delete";
+
+interface FieldOption {
+  value: string | number;
+  label: string;
+}
 
 export interface FieldConfig {
   key: string;
   label: string;
-  type?: "text" | "number" | "date";
-  value?: string | number;
+  type?: "text" | "number" | "date" | "select";
   placeholder?: string;
+  value?: string | number;
+  options?: FieldOption[];
 }
 
-export interface AzioniBaseProps {
+interface AzioniBaseProps {
   actionType: ActionType;
-  entityName?: string;
-  fields: FieldConfig[];
   onAction: (values: Record<string, any>) => void;
   onCancel: () => void;
+  entityName?: string;
+  message?: string;
+  fields?: FieldConfig[];
 }
 
 const AzioniBase: React.FC<AzioniBaseProps> = ({
   actionType,
-  entityName = "elemento",
-  fields,
   onAction,
   onCancel,
+  entityName = "elemento",
+  message,
+  fields = [],
 }) => {
-  const [values, setValues] = useState<Record<string, any>>(() =>
-    fields.reduce((acc, f) => {
-      acc[f.key] = f.value ?? "";
-      return acc;
-    }, {} as Record<string, any>)
-  );
-
-  const handleChange = (key: string, val: any) => {
-    setValues((prev) => ({ ...prev, [key]: val }));
-  };
-
   const actionLabels: Record<ActionType, { title: string; confirm: string }> = {
     add: { title: `Aggiungi ${entityName}`, confirm: "Aggiungi" },
     edit: { title: `Modifica ${entityName}`, confirm: "Salva" },
@@ -43,6 +40,24 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
   };
 
   const { title, confirm } = actionLabels[actionType];
+
+  const [values, setValues] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    const initialValues: Record<string, any> = {};
+    fields.forEach((f) => {
+      if (actionType === "add" && f.type === "select") {
+        initialValues[f.key] = ""; // select vuota in modalità add
+      } else {
+        initialValues[f.key] = f.value ?? "";
+      }
+    });
+    setValues(initialValues);
+  }, [fields, actionType]);
+
+  const handleChange = (key: string, value: any) => {
+    setValues((prev) => ({ ...prev, [key]: value }));
+  };
 
   return (
     <div
@@ -65,54 +80,93 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
           borderRadius: 12,
           padding: "32px 28px",
           boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
-          minWidth: 320,
+          minWidth: 360,
           textAlign: "center",
+          maxHeight: "90vh",
+          overflowY: "auto",
         }}
       >
         <h3 style={{ marginBottom: 12 }}>{title}</h3>
+        {message && <p style={{ marginBottom: 18 }}>{message}</p>}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {fields.map((f) => (
-            <div key={f.key} style={{ display: "flex", flexDirection: "column", textAlign: "left" }}>
-              <label style={{ marginBottom: 4 }}>{f.label}</label>
-              {actionType === "delete" ? (
-                <span
-                  style={{
-                    padding: "8px",
-                    borderRadius: "6px",
-                    border: "1px solid #ccc",
-                    backgroundColor: "#f3f3f3",
-                    display: "inline-block",
-                  }}
-                >
-                  {String(values[f.key])}
-                </span>
-              ) : (
-                <input
-                  type={f.type ?? "text"}
-                  value={values[f.key]}
-                  placeholder={f.placeholder}
-                  onChange={(e) =>
-                    handleChange(f.key, f.type === "number" ? Number(e.target.value) : e.target.value)
-                  }
-                  style={{
-                    padding: "8px",
-                    borderRadius: "6px",
-                    border: "1px solid #ccc",
-                    outline: "none",
-                  }}
-                />
-              )}
-            </div>
-          ))}
-        </div>
+        {fields.map((f) => (
+          <div key={f.key} style={{ marginBottom: 16, textAlign: "left" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: 6,
+                fontWeight: "bold",
+                color: "#1e3a8a",
+              }}
+            >
+              {f.label}
+            </label>
+
+            {actionType === "delete" ? (
+              <span
+                style={{
+                  padding: "8px",
+                  borderRadius: "6px",
+                  border: "1px solid #ccc",
+                  backgroundColor: "#f3f3f3",
+                  display: "inline-block",
+                  width: "100%",
+                }}
+              >
+                {f.type === "select" && f.options
+                  ? f.options.find(
+                      (opt) => String(opt.value) === String(values[f.key])
+                    )?.label
+                  : String(values[f.key])}
+              </span>
+            ) : f.type === "select" && f.options ? (
+              <select
+                value={values[f.key]}
+                onChange={(e) => handleChange(f.key, e.target.value)}
+                style={{
+                  padding: "8px",
+                  borderRadius: "6px",
+                  border: "1px solid #ccc",
+                  outline: "none",
+                  width: "100%",
+                }}
+              >
+                <option value="">Seleziona...</option>
+                {f.options.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type={f.type ?? "text"}
+                value={values[f.key]}
+                placeholder={f.placeholder}
+                onChange={(e) =>
+                  handleChange(
+                    f.key,
+                    f.type === "number" ? Number(e.target.value) : e.target.value
+                  )
+                }
+                style={{
+                  padding: "8px",
+                  borderRadius: "6px",
+                  border: "1px solid #ccc",
+                  outline: "none",
+                  width: "100%",
+                }}
+              />
+            )}
+          </div>
+        ))}
 
         <div
           style={{
             display: "flex",
             justifyContent: "center",
             gap: "18px",
-            marginTop: 18,
+            marginTop: 24,
           }}
         >
           <button

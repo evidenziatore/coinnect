@@ -12,15 +12,16 @@ const tabs = [
 ];
 
 interface GestioneContentProps {
-  fetchFromDb: () => void,
-  movements: Movement[],
-  categories: Category[],
-  sources: Source[],
-  products: Product[],
+  fetchFromDb: () => void;
+  movements: Movement[];
+  categories: Category[];
+  sources: Source[];
+  products: Product[];
+  userid: number;
 }
 
 const GestioneContent: React.FC<GestioneContentProps> = (
-  { fetchFromDb, movements, categories, sources, products }
+  { fetchFromDb, movements, categories, sources, products, userid }
 ) => {
   const [activeTab, setActiveTab] = useState("movimenti");
 
@@ -55,7 +56,7 @@ const GestioneContent: React.FC<GestioneContentProps> = (
 
       {/* Contenuto */}
       <div>
-        {activeTab === "movimenti" && <MovimentiTable fetchFromDb={fetchFromDb} movements={movements} />}
+        {activeTab === "movimenti" && <MovimentiTable fetchFromDb={fetchFromDb} movements={movements} products={products} categories={categories} sources={sources} userid={userid}/>}
         {activeTab === "prodotti" && <ProdottiTable fetchFromDb={fetchFromDb} products={products} />}
         {activeTab === "categorie" && <CategorieTable fetchFromDb={fetchFromDb} categories={categories} />}
         {activeTab === "provenienze" && <ProvenienzeTable fetchFromDb={fetchFromDb} sources={sources} />}
