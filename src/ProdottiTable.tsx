@@ -1,39 +1,65 @@
-import React, { useMemo } from "react";
-import FilterableTable from "./FilterableTable";
+import React, { useMemo, useState } from "react";
+import FilterableTable, { TableData } from "./FilterableTable";
+import AzioniBase, { ActionType, FieldConfig } from "./AzioniBase";
 import { Product } from "./types";
 
 interface ProdottiTableProps {
-  fetchFromDb: () => void,
-  products: Product[],
+  fetchFromDb: () => void;
+  products: Product[];
 }
 
-const ProdottiTable: React.FC<ProdottiTableProps> = (
-  { fetchFromDb, products }
-) => {
-  const data = useMemo(
-    () =>
-      products.map(p => ({
-        Nome: p.name ?? "",
-        Colore: p.color ?? "",
-      })),
-    [products] // si ricrea solo se cambia products
-  );
+const ProdottiTable: React.FC<ProdottiTableProps> = ({ fetchFromDb, products }) => {
+  const [modalAction, setModalAction] = useState<ActionType | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  const data: TableData[] = useMemo(
+    () => products.map((p) => ({ Nome: p.name ?? "", Colore: p.color ?? "" })),
+    [products]
+  );
   const columns = ["Nome", "Colore"];
 
-  const onEdit = async () => {
-    fetchFromDb();
+  const handleAdd = () => {
+    setSelectedProduct(null);
+    setModalAction("add");
   };
 
-  const onDelete = async () => {
-    fetchFromDb();
+  const handleEdit = (row: TableData) => {
+    const product = products.find((p) => p.name === row.Nome && p.color === row.Colore) ?? null;
+    setSelectedProduct(product);
+    setModalAction("edit");
   };
 
-  const onAdd = async () => {
-    fetchFromDb();
+  const handleDelete = (row: TableData) => {
+    const product = products.find((p) => p.name === row.Nome && p.color === row.Colore) ?? null;
+    setSelectedProduct(product);
+    setModalAction("delete");
   };
 
-  return <FilterableTable data={data} columns={columns} onEdit={onEdit} onDelete={onDelete} onAdd={onAdd} />;
+  const handleConfirm = (values: Record<string, any>) => {
+    // Qui puoi chiamare createProduct/updateProduct/deleteProduct
+    fetchFromDb();
+    setModalAction(null);
+  };
+
+  const fields: FieldConfig[] = [
+    { key: "name", label: "Nome", value: selectedProduct?.name },
+    { key: "color", label: "Colore", value: selectedProduct?.color },
+  ];
+
+  return (
+    <>
+      <FilterableTable data={data} columns={columns} onAdd={handleAdd} onEdit={handleEdit} onDelete={handleDelete} />
+      {modalAction && (
+        <AzioniBase
+          actionType={modalAction}
+          entityName="prodotto"
+          fields={fields}
+          onAction={handleConfirm}
+          onCancel={() => setModalAction(null)}
+        />
+      )}
+    </>
+  );
 };
 
 export default ProdottiTable;

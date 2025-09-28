@@ -1,39 +1,64 @@
-import React, { useMemo } from "react";
-import FilterableTable from "./FilterableTable";
+import React, { useMemo, useState } from "react";
+import FilterableTable, { TableData } from "./FilterableTable";
+import AzioniBase, { ActionType, FieldConfig } from "./AzioniBase";
 import { Source } from "./types";
 
-interface ProvenienzaTableProps {
-  fetchFromDb: () => void,
-  sources: Source[],
+interface ProvenienzeTableProps {
+  fetchFromDb: () => void;
+  sources: Source[];
 }
 
-const ProvenienzeTable: React.FC<ProvenienzaTableProps> = (
-  { fetchFromDb, sources }
-) => {
-  const data = useMemo(
-    () =>
-    sources.map(s => ({
-      Nome: s.name ?? "",
-      Colore: s?.color ?? "",
-    })),
-    [sources] // si ricrea solo se cambia products
-  );
+const ProvenienzeTable: React.FC<ProvenienzeTableProps> = ({ fetchFromDb, sources }) => {
+  const [modalAction, setModalAction] = useState<ActionType | null>(null);
+  const [selectedSource, setSelectedSource] = useState<Source | null>(null);
 
+  const data: TableData[] = useMemo(
+    () => sources.map((s) => ({ Nome: s.name ?? "", Colore: s.color ?? "" })),
+    [sources]
+  );
   const columns = ["Nome", "Colore"];
 
-  const onEdit = async () => {
-    fetchFromDb();
+  const handleAdd = () => {
+    setSelectedSource(null);
+    setModalAction("add");
   };
 
-  const onDelete = async () => {
-    fetchFromDb();
+  const handleEdit = (row: TableData) => {
+    const source = sources.find((s) => s.name === row.Nome && s.color === row.Colore) ?? null;
+    setSelectedSource(source);
+    setModalAction("edit");
   };
 
-  const onAdd = async () => {
-    fetchFromDb();
+  const handleDelete = (row: TableData) => {
+    const source = sources.find((s) => s.name === row.Nome && s.color === row.Colore) ?? null;
+    setSelectedSource(source);
+    setModalAction("delete");
   };
 
-  return <FilterableTable data={data} columns={columns} onEdit={onEdit} onDelete={onDelete} onAdd={onAdd} />;
+  const handleConfirm = (values: Record<string, any>) => {
+    fetchFromDb();
+    setModalAction(null);
+  };
+
+  const fields: FieldConfig[] = [
+    { key: "name", label: "Nome", value: selectedSource?.name },
+    { key: "color", label: "Colore", value: selectedSource?.color },
+  ];
+
+  return (
+    <>
+      <FilterableTable data={data} columns={columns} onAdd={handleAdd} onEdit={handleEdit} onDelete={handleDelete} />
+      {modalAction && (
+        <AzioniBase
+          actionType={modalAction}
+          entityName="provenienza"
+          fields={fields}
+          onAction={handleConfirm}
+          onCancel={() => setModalAction(null)}
+        />
+      )}
+    </>
+  );
 };
 
 export default ProvenienzeTable;

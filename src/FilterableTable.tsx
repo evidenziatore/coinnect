@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useEffect } from "react";
 
-interface TableData {
-  [key: string]: string | number | Date;
+export interface TableData {
+  [key: string]: string | number | Date | null | undefined;
 }
 
-interface FilterableTableProps {
+export interface FilterableTableProps {
   data: TableData[];
   columns: string[];
   rowsPerPage?: number;
@@ -29,10 +29,9 @@ const FilterableTable: React.FC<FilterableTableProps> = ({
   const filteredData = useMemo(
     () =>
       data.filter((row) =>
-        columns.some((col) => {
-          let cellValue = row[col];
-          return String(cellValue).toLowerCase().includes(filter.toLowerCase());
-        })
+        columns.some((col) =>
+          String(row[col] ?? "").toLowerCase().includes(filter.toLowerCase())
+        )
       ),
     [data, filter, columns]
   );
@@ -71,7 +70,7 @@ const FilterableTable: React.FC<FilterableTableProps> = ({
     }
   };
 
-  const formatCell = (col: string, value: string | number | Date | undefined) => {
+  const formatCell = (col: string, value: string | number | Date | null | undefined) => {
     if (value === null || value === undefined) return "";
     if (col.toLowerCase().includes("date")) {
       const date = new Date(value);
@@ -88,227 +87,72 @@ const FilterableTable: React.FC<FilterableTableProps> = ({
 
   return (
     <div style={{ width: "100%" }}>
-      {/* Barra superiore: filtro + aggiungi */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "12px",
-          gap: "12px",
-          flexWrap: "wrap",
-        }}
-      >
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12, gap: 12, flexWrap: "wrap" }}>
         <input
           type="text"
           placeholder="Filtra..."
           value={filter}
-          onChange={(e) => {
-            setFilter(e.target.value);
-            setCurrentPage(1);
-          }}
-          style={{
-            flex: 1,
-            minWidth: "200px",
-            padding: "8px",
-            borderRadius: "8px",
-            border: "2px solid #1e3a8a",
-            outline: "none",
-          }}
+          onChange={(e) => { setFilter(e.target.value); setCurrentPage(1); }}
+          style={{ flex: 1, minWidth: 200, padding: 8, borderRadius: 8, border: "2px solid #1e3a8a", outline: "none" }}
         />
-        <button
-          onClick={onAdd}
-          style={{
-            padding: "8px 16px",
-            borderRadius: "8px",
-            border: "1px solid #10b981",
-            backgroundColor: "#10b981",
-            color: "#ffffff",
-            fontWeight: "bold",
-            cursor: "pointer",
-          }}
-        >
-          + Aggiungi
-        </button>
+        {onAdd && (
+          <button
+            onClick={onAdd}
+            style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #10b981", backgroundColor: "#10b981", color: "#fff", fontWeight: "bold", cursor: "pointer" }}
+          >
+            + Aggiungi
+          </button>
+        )}
       </div>
 
-      {/* Conteggio record */}
-      <div style={{ marginBottom: "10px", fontSize: "14px", color: "#1e3a8a" }}>
+      <div style={{ marginBottom: 10, fontSize: 14, color: "#1e3a8a" }}>
         Record trovati: <strong>{filteredData.length}</strong>
       </div>
 
-      {/* Tabella */}
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          backgroundColor: "white",
-          borderRadius: "12px",
-          overflow: "hidden",
-        }}
-      >
+      <table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "white", borderRadius: 12, overflow: "hidden" }}>
         <thead>
           <tr style={{ backgroundColor: "#f3f4f6" }}>
             {columns.map((col) => (
-              <th
-                key={col}
-                onClick={() => handleSort(col)}
-                style={{
-                  padding: "12px",
-                  textAlign: "left",
-                  borderBottom: "2px solid #e5e7eb",
-                  fontWeight: "bold",
-                  color: "#1e3a8a",
-                  cursor: "pointer",
-                  userSelect: "none",
-                }}
-              >
-                {col}
-                {sortColumn === col && (sortDirection === "asc" ? " ▲" : " ▼")}
+              <th key={col} onClick={() => handleSort(col)} style={{ padding: 12, textAlign: "left", borderBottom: "2px solid #e5e7eb", fontWeight: "bold", color: "#1e3a8a", cursor: "pointer", userSelect: "none" }}>
+                {col} {sortColumn === col && (sortDirection === "asc" ? "▲" : "▼")}
               </th>
             ))}
-            <th
-              style={{
-                padding: "12px",
-                textAlign: "left", // allineata a sinistra
-                borderBottom: "2px solid #e5e7eb",
-                fontWeight: "bold",
-                color: "#1e3a8a",
-              }}
-            >
-              Azioni
-            </th>
+            {(onEdit || onDelete) && <th style={{ padding: 12, textAlign: "left", borderBottom: "2px solid #e5e7eb", fontWeight: "bold", color: "#1e3a8a" }}>Azioni</th>}
           </tr>
         </thead>
         <tbody>
           {paginatedData.map((row, i) => (
-            <tr
-              key={i}
-              style={{
-                borderBottom: "1px solid #e5e7eb",
-                backgroundColor: i % 2 === 0 ? "#ffffff" : "#f9fafb",
-              }}
-            >
+            <tr key={i} style={{ borderBottom: "1px solid #e5e7eb", backgroundColor: i % 2 === 0 ? "#fff" : "#f9fafb" }}>
               {columns.map((col) => (
-                <td
-                  key={col}
-                  style={{
-                    padding: "10px",
-                    textAlign: "left",
-                    color: "#1e3a8a",
-                  }}
-                >
-                  {formatCell(col, row[col])}
-                </td>
+                <td key={col} style={{ padding: 10, textAlign: "left", color: "#1e3a8a" }}>{formatCell(col, row[col])}</td>
               ))}
-
-              <td style={{ textAlign: "left", padding: "10px", gap: "6px" }}>
-                <button
-                  onClick={() => onEdit && onEdit(row)}
-                  style={{
-                    marginRight: "6px",
-                    padding: "6px 12px",
-                    borderRadius: "6px",
-                    border: "1px solid #3b82f6",
-                    backgroundColor: "#ffffff",
-                    color: "#3b82f6",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Modifica
-                </button>
-                <button
-                  onClick={() => onDelete && onDelete(row)}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: "6px",
-                    border: "1px solid #ef4444",
-                    backgroundColor: "#ffffff",
-                    color: "#ef4444",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Elimina
-                </button>
-              </td>
+              {(onEdit || onDelete) && (
+                <td style={{ textAlign: "left", padding: 10, display: "flex", gap: 6 }}>
+                  {onEdit && (
+                    <button onClick={() => onEdit(row)} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid #3b82f6", backgroundColor: "#fff", color: "#3b82f6", cursor: "pointer", fontWeight: "bold" }}>Modifica</button>
+                  )}
+                  {onDelete && (
+                    <button onClick={() => onDelete(row)} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid #ef4444", backgroundColor: "#fff", color: "#ef4444", cursor: "pointer", fontWeight: "bold" }}>Elimina</button>
+                  )}
+                </td>
+              )}
             </tr>
           ))}
           {paginatedData.length === 0 && (
             <tr>
-              <td
-                colSpan={columns.length + 1}
-                style={{
-                  padding: "12px",
-                  textAlign: "center",
-                  color: "#6b7280",
-                }}
-              >
-                Nessun risultato trovato
-              </td>
+              <td colSpan={columns.length + ((onEdit || onDelete) ? 1 : 0)} style={{ padding: 12, textAlign: "center", color: "#6b7280" }}>Nessun risultato trovato</td>
             </tr>
           )}
         </tbody>
       </table>
 
-      {/* Navigazione pagine */}
-      <div
-        style={{
-          marginTop: "16px",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          position: "relative",
-          gap: "20px",
-        }}
-      >
+      <div style={{ marginTop: 16, display: "flex", justifyContent: "center", alignItems: "center", gap: 20, position: "relative" }}>
         {currentPage > 1 && (
-          <button
-            onClick={() => setCurrentPage((p) => p - 1)}
-            style={{
-              padding: "8px 16px",
-              borderRadius: "6px",
-              border: "1px solid #3b82f6",
-              backgroundColor: "#ffffff",
-              color: "#3b82f6",
-              cursor: "pointer",
-              fontWeight: "bold",
-              position: "absolute",
-              left: 0,
-            }}
-          >
-            ◀ Precedente
-          </button>
+          <button onClick={() => setCurrentPage((p) => p - 1)} style={{ padding: "8px 16px", borderRadius: 6, border: "1px solid #3b82f6", backgroundColor: "#fff", color: "#3b82f6", cursor: "pointer", fontWeight: "bold", position: "absolute", left: 0 }}>◀ Precedente</button>
         )}
-
-        <span
-          style={{
-            fontSize: "14px",
-            color: "#1e3a8a",
-            fontWeight: "bold",
-          }}
-        >
-          Pagina {currentPage} di {totalPages}
-        </span>
-
+        <span style={{ fontSize: 14, color: "#1e3a8a", fontWeight: "bold" }}>Pagina {currentPage} di {totalPages}</span>
         {currentPage < totalPages && (
-          <button
-            onClick={() => setCurrentPage((p) => p + 1)}
-            style={{
-              padding: "8px 16px",
-              borderRadius: "6px",
-              border: "1px solid #3b82f6",
-              backgroundColor: "#ffffff",
-              color: "#3b82f6",
-              cursor: "pointer",
-              fontWeight: "bold",
-              position: "absolute",
-              right: 0,
-            }}
-          >
-            Successiva ▶
-          </button>
+          <button onClick={() => setCurrentPage((p) => p + 1)} style={{ padding: "8px 16px", borderRadius: 6, border: "1px solid #3b82f6", backgroundColor: "#fff", color: "#3b82f6", cursor: "pointer", fontWeight: "bold", position: "absolute", right: 0 }}>Successiva ▶</button>
         )}
       </div>
     </div>
