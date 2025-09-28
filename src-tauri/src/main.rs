@@ -117,8 +117,8 @@ fn edit_product(id: i32, name: Option<String>, color: Option<String>) -> usize {
 
 // ---------------- MOVEMENTS ----------------
 #[tauri::command]
-fn add_movement(userid: i32, productid: i32, categoryid: i32, sourceid: i32, weight: Option<f64>, price: Option<f64>) {
-    create_movement(userid, productid, categoryid, sourceid, weight, price);
+fn add_movement(userid: i32, productid: i32, categoryid: i32, sourceid: i32, weight: Option<f64>, price: Option<f64>, date: Option<String>) {
+    create_movement(userid, productid, categoryid, sourceid, weight, price, date);
 }
 
 #[tauri::command]
@@ -137,8 +137,8 @@ fn remove_movement(id: i32) -> usize {
 }
 
 #[tauri::command]
-fn edit_movement(id: i32, weight: Option<f64>, price: Option<f64>) -> usize {
-    update_movement(id, weight, price)
+fn edit_movement(id: i32, productid: i32, categoryid: i32, sourceid: i32, weight: Option<f64>, price: Option<f64>, date: Option<String>) -> usize {
+    update_movement(id, productid, categoryid, sourceid, weight, price, date)
 }
 
 // ---------------- MAIN ----------------

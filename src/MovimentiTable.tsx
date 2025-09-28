@@ -32,7 +32,7 @@ const MovimentiTable: React.FC<MovimentiTableProps> = ({
         Provenienza: m.source?.name ?? "",
         Peso: m.weight ?? 0,
         Prezzo: m.price != null ? (m.price > 0 ? `+${m.price}` : `${m.price}`) : "0",
-        Data: (m.date ?? "").replace(/-/g, "/"),
+        Data: (m.date ?? "").replace(/-/g, "/").substring(0, 10),
       })),
     [movements]
   );
@@ -76,12 +76,17 @@ const MovimentiTable: React.FC<MovimentiTableProps> = ({
           sourceid: Number(values.source),
           weight: Number(values.weight),
           price: Number(values.price),
+          date: values.date || null,
         });
       } else if (modalAction === "edit" && selectedMovement) {
         await invoke("edit_movement", {
           id: selectedMovement.id,
+          productid: Number(values.product),
+          categoryid: Number(values.category),
+          sourceid: Number(values.source),
           weight: Number(values.weight),
           price: Number(values.price),
+          date: values.date || null,
         });
       } else if (modalAction === "delete" && selectedMovement) {
         await invoke("remove_movement", { id: selectedMovement.id });

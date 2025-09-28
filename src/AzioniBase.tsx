@@ -48,9 +48,17 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
     const initialValues: Record<string, any> = {};
     const initialPickers: Record<string, boolean> = {};
     fields.forEach((f) => {
+    if (f.type === "date" && f.value) {
+      // formatta la data in YYYY-MM-DD
+      const d = new Date(f.value);
+      initialValues[f.key] = !isNaN(d.getTime())
+        ? d.toISOString().slice(0, 10)
+        : "";
+    } else {
       initialValues[f.key] = f.value ?? (f.type === "color" ? "#000000" : "");
-      if (f.type === "color") initialPickers[f.key] = false;
-    });
+    }
+    if (f.type === "color") initialPickers[f.key] = false;
+  });
     setValues(initialValues);
     setColorPickersOpen(initialPickers);
   }, [fields, actionType]);

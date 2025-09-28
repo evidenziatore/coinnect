@@ -192,7 +192,7 @@ pub fn update_product(product_id: i32, new_name: Option<&str>, new_color: Option
 }
 
 // ---------------- MOVEMENTS ----------------
-pub fn create_movement(user_id: i32, product_id: i32, category_id: i32, source_id: i32, weight: Option<f64>, price: Option<f64>) -> usize {
+pub fn create_movement(user_id: i32, product_id: i32, category_id: i32, source_id: i32, weight: Option<f64>, price: Option<f64>, date: Option<String>) -> usize {
     let mut conn = establish_connection();
     let new_movement = NewMovement {
         user_id,
@@ -201,7 +201,7 @@ pub fn create_movement(user_id: i32, product_id: i32, category_id: i32, source_i
         source_id,
         weight,
         price,
-        date: None,
+        date,
     };
     diesel::insert_into(movements::table)
         .values(&new_movement)
@@ -228,16 +228,36 @@ pub fn delete_movement(movement_id: i32) -> usize {
         .expect("Errore eliminazione movimento")
 }
 
-pub fn update_movement(movement_id: i32, weight: Option<f64>, price: Option<f64>) -> usize {
+pub fn update_movement(
+    movement_id: i32,
+    product_id: i32,
+    category_id: i32,
+    source_id: i32,
+    weight: Option<f64>,
+    price: Option<f64>,
+    date: Option<String>
+) -> usize {
     #[derive(AsChangeset)]
     #[diesel(table_name = movements)]
     struct UpdateMovement {
+        product_id: i32,
+        category_id: i32,
+        source_id: i32,
         weight: Option<f64>,
         price: Option<f64>,
+        date: Option<String>,
     }
 
     let mut conn = establish_connection();
-    let changes = UpdateMovement { weight, price };
+    let changes = UpdateMovement {
+        product_id,
+        category_id,
+        source_id,
+        weight,
+        price,
+        date,
+    };
+
     diesel::update(movements::table.filter(movements::id.eq(movement_id)))
         .set(changes)
         .execute(&mut conn)
