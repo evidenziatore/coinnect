@@ -14,7 +14,7 @@ const ProdottiTable: React.FC<ProdottiTableProps> = ({ fetchFromDb, products }) 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const data: TableData[] = useMemo(
-    () => products.map((p) => ({ Nome: p.name ?? "", Colore: p.color ?? "" })),
+    () => products.map((p) => ({ Id: p.id, Nome: p.name ?? "", Colore: p.color ?? "" })),
     [products]
   );
   const columns = ["Nome", "Colore"];
@@ -25,13 +25,13 @@ const ProdottiTable: React.FC<ProdottiTableProps> = ({ fetchFromDb, products }) 
   };
 
   const handleEdit = (row: TableData) => {
-    const product = products.find((p) => p.name === row.Nome && p.color === row.Colore) ?? null;
+    const product = products.find((p) => p.id === row.Id) ?? null;
     setSelectedProduct(product);
     setModalAction("edit");
   };
 
   const handleDelete = (row: TableData) => {
-    const product = products.find((p) => p.name === row.Nome && p.color === row.Colore) ?? null;
+    const product = products.find((p) => p.id === row.Id) ?? null;
     setSelectedProduct(product);
     setModalAction("delete");
   };

@@ -14,7 +14,7 @@ const ProvenienzeTable: React.FC<ProvenienzeTableProps> = ({ fetchFromDb, source
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
 
   const data: TableData[] = useMemo(
-    () => sources.map((s) => ({ Nome: s.name ?? "", Colore: s.color ?? "" })),
+    () => sources.map((s) => ({ Id: s.id, Nome: s.name ?? "", Colore: s.color ?? "" })),
     [sources]
   );
   const columns = ["Nome", "Colore"];
@@ -25,13 +25,13 @@ const ProvenienzeTable: React.FC<ProvenienzeTableProps> = ({ fetchFromDb, source
   };
 
   const handleEdit = (row: TableData) => {
-    const source = sources.find((s) => s.name === row.Nome && s.color === row.Colore) ?? null;
+    const source = sources.find((s) => s.id === row.Id) ?? null;
     setSelectedSource(source);
     setModalAction("edit");
   };
 
   const handleDelete = (row: TableData) => {
-    const source = sources.find((s) => s.name === row.Nome && s.color === row.Colore) ?? null;
+    const source = sources.find((s) => s.id === row.Id) ?? null;
     setSelectedSource(source);
     setModalAction("delete");
   };

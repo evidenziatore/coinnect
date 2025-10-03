@@ -27,6 +27,7 @@ const MovimentiTable: React.FC<MovimentiTableProps> = ({
   const data: TableData[] = useMemo(
     () =>
       movements.map((m) => ({
+        Id: m.id, 
         Prodotto: m.product?.name ?? "",
         Categoria: m.category?.name ?? "",
         Provenienza: m.source?.name ?? "",
@@ -47,9 +48,7 @@ const MovimentiTable: React.FC<MovimentiTableProps> = ({
   const handleEdit = (row: TableData) => {
     const movement = movements.find(
       (m) =>
-        (m.product?.name ?? "") === row.Prodotto &&
-        (m.category?.name ?? "") === row.Categoria &&
-        (m.source?.name ?? "") === row.Provenienza
+        m.id === row.Id
     );
     setSelectedMovement(movement ?? null);
     setModalAction("edit");
@@ -58,9 +57,7 @@ const MovimentiTable: React.FC<MovimentiTableProps> = ({
   const handleDelete = (row: TableData) => {
     const movement = movements.find(
       (m) =>
-        (m.product?.name ?? "") === row.Prodotto &&
-        (m.category?.name ?? "") === row.Categoria &&
-        (m.source?.name ?? "") === row.Provenienza
+        m.id === row.Id
     );
     setSelectedMovement(movement ?? null);
     setModalAction("delete");

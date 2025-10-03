@@ -14,7 +14,7 @@ const CategorieTable: React.FC<CategorieTableProps> = ({ fetchFromDb, categories
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
   const data: TableData[] = useMemo(
-    () => categories.map((c) => ({ Nome: c.name ?? "", Colore: c.color ?? "" })),
+    () => categories.map((c) => ({Id: c.id, Nome: c.name ?? "", Colore: c.color ?? "" })),
     [categories]
   );
   const columns = ["Nome", "Colore"];
@@ -25,13 +25,13 @@ const CategorieTable: React.FC<CategorieTableProps> = ({ fetchFromDb, categories
   };
 
   const handleEdit = (row: TableData) => {
-    const category = categories.find((c) => c.name === row.Nome && c.color === row.Colore) ?? null;
+    const category = categories.find((c) => c.id === row.Id) ?? null;
     setSelectedCategory(category);
     setModalAction("edit");
   };
 
   const handleDelete = (row: TableData) => {
-    const category = categories.find((c) => c.name === row.Nome && c.color === row.Colore) ?? null;
+    const category = categories.find((c) => c.id === row.Id) ?? null;
     setSelectedCategory(category);
     setModalAction("delete");
   };
