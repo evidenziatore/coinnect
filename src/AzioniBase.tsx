@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { HexColorPicker } from "react-colorful";
 
 export type ActionType = "add" | "edit" | "delete";
@@ -42,26 +42,73 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
 
   const { title, confirm } = actionLabels[actionType];
   const [values, setValues] = useState<Record<string, any>>({});
+  const [searchText, setSearchText] = useState<Record<string, string>>({});
   const [colorPickersOpen, setColorPickersOpen] = useState<Record<string, boolean>>({});
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+  // ref container principale del modal (non più usato per il click-out della select)
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // refs per ogni select dropdown wrapper
+  const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     const initialValues: Record<string, any> = {};
+    const initialSearch: Record<string, string> = {};
     const initialPickers: Record<string, boolean> = {};
+
     fields.forEach((f) => {
-    if (f.type === "date" && f.value) {
-      // formatta la data in YYYY-MM-DD
-      const d = new Date(f.value);
-      initialValues[f.key] = !isNaN(d.getTime())
-        ? d.toISOString().slice(0, 10)
-        : "";
-    } else {
-      initialValues[f.key] = f.value ?? (f.type === "color" ? "#000000" : "");
-    }
-    if (f.type === "color") initialPickers[f.key] = false;
-  });
+      if (f.type === "date" && f.value) {
+        const d = new Date(f.value);
+        initialValues[f.key] = !isNaN(d.getTime())
+          ? d.toISOString().slice(0, 10)
+          : "";
+      } else {
+        initialValues[f.key] = f.value ?? (f.type === "color" ? "#000000" : "");
+      }
+
+      if (f.type === "select" && f.options) {
+        const selectedLabel =
+          f.options.find((o) => String(o.value) === String(f.value))?.label || "";
+        initialSearch[f.key] = selectedLabel;
+      }
+
+      if (f.type === "color") initialPickers[f.key] = false;
+    });
+
     setValues(initialValues);
+    setSearchText(initialSearch);
     setColorPickersOpen(initialPickers);
   }, [fields, actionType]);
+
+  // handler globale: chiude la dropdown attiva se il click è fuori dalla sua wrapper
+  useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      if (!openDropdown) return;
+
+      const activeWrapper = dropdownRefs.current[openDropdown];
+      if (!activeWrapper) {
+        setOpenDropdown(null);
+        return;
+      }
+
+      if (!activeWrapper.contains(event.target as Node)) {
+        // reset del testo al valore selezionato (se presente)
+        const field = fields.find((f) => f.key === openDropdown);
+        if (field?.type === "select" && field.options) {
+          const selectedLabel =
+            field.options.find(
+              (o) => String(o.value) === String(values[openDropdown])
+            )?.label || "";
+          setSearchText((prev) => ({ ...prev, [openDropdown]: selectedLabel }));
+        }
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleDocumentClick);
+    return () => document.removeEventListener("mousedown", handleDocumentClick);
+  }, [openDropdown, values, fields]);
 
   const handleChange = (key: string, value: any) => {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -87,6 +134,7 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
       }}
     >
       <div
+        ref={containerRef}
         style={{
           background: "#fff",
           borderRadius: 12,
@@ -147,24 +195,78 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
                 </span>
               )
             ) : f.type === "select" && f.options ? (
-              <select
-                value={values[f.key]}
-                onChange={(e) => handleChange(f.key, e.target.value)}
-                style={{
-                  padding: "8px",
-                  borderRadius: "6px",
-                  border: "1px solid #ccc",
-                  outline: "none",
-                  width: "100%",
-                }}
+              // wrapper con ref specifica per questa select
+              <div
+                ref={(el) => void (dropdownRefs.current[f.key] = el)}
+                style={{ position: "relative" }}
               >
-                <option value="">Seleziona...</option>
-                {f.options.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+                {/* Input ricerca */}
+                <input
+                  type="text"
+                  placeholder="Cerca..."
+                  value={searchText[f.key] ?? ""}
+                  onFocus={() => setOpenDropdown(f.key)}
+                  onChange={(e) => {
+                    setSearchText((prev) => ({ ...prev, [f.key]: e.target.value }));
+                    setOpenDropdown(f.key);
+                  }}
+                  style={{
+                    padding: "8px",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc",
+                    outline: "none",
+                    width: "100%",
+                  }}
+                />
+
+                {/* Lista opzioni filtrata */}
+                {openDropdown === f.key && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: 0,
+                      right: 0,
+                      maxHeight: 150,
+                      overflowY: "auto",
+                      border: "1px solid #ccc",
+                      borderRadius: "6px",
+                      background: "#fff",
+                      zIndex: 200,
+                      marginTop: 6,
+                    }}
+                  >
+                    {f.options
+                      .slice()
+                      .sort((a, b) => a.label.localeCompare(b.label))
+                      .filter((opt) =>
+                        opt.label
+                          .toLowerCase()
+                          .includes((searchText[f.key] ?? "").toLowerCase())
+                      )
+                      .map((opt) => (
+                        <div
+                          key={opt.value}
+                          onClick={() => {
+                            handleChange(f.key, opt.value);
+                            setSearchText((prev) => ({ ...prev, [f.key]: opt.label }));
+                            setOpenDropdown(null);
+                          }}
+                          style={{
+                            padding: "8px",
+                            cursor: "pointer",
+                            background:
+                              String(opt.value) === String(values[f.key])
+                                ? "#e5f3ff"
+                                : "white",
+                          }}
+                        >
+                          {opt.label}
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
             ) : f.type === "color" ? (
               <div style={{ position: "relative" }}>
                 <button
@@ -185,8 +287,8 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
                     style={{
                       position: "relative",
                       zIndex: 100,
-                      marginTop: 20,   // spazio sopra
-                      marginBottom: 20 // spazio sotto
+                      marginTop: 20,
+                      marginBottom: 20,
                     }}
                   >
                     <HexColorPicker

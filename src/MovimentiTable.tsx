@@ -30,7 +30,7 @@ const MovimentiTable: React.FC<MovimentiTableProps> = ({
         Prodotto: m.product?.name ?? "",
         Categoria: m.category?.name ?? "",
         Provenienza: m.source?.name ?? "",
-        Peso: m.weight ?? 0,
+        Peso: m.weight === 0 ? "/" : m.weight,
         Prezzo: m.price != null ? (m.price > 0 ? `+${m.price}` : `${m.price}`) : "0",
         Data: (m.date ?? "").replace(/-/g, "/").substring(0, 10),
       })),

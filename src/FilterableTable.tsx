@@ -16,7 +16,7 @@ export interface FilterableTableProps {
 const FilterableTable: React.FC<FilterableTableProps> = ({
   data,
   columns,
-  rowsPerPage = 16,
+  rowsPerPage = 10,
   onEdit,
   onDelete,
   onAdd,
