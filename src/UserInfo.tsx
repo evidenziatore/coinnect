@@ -107,14 +107,14 @@ const UserInfo: React.FC<UserInfoProps> = ({ user}) => {
           overflow: "hidden",
         }}
       >
-        <div
-          style={{
-            flex: 1,
-            padding: "20px",
-            overflowY: "auto",
-            boxSizing: "border-box",
-          }}
-        >
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '90%',
+          overflowY: 'auto',
+          padding: 20,
+          boxSizing: 'border-box'
+        }}>
           {activeTab === "tab1" && <GestioneContent fetchFromDb={fetchMovements} movements={movements} categories={categories} sources={sources} products={products} userid={user.id} />}
           {activeTab === "tab2" && <StatisticheContent allMovements={allMovements} userid={user.id} products={products} categories={categories} sources={sources} />}
           {activeTab === "tab3" && <EsportazioniContent/>}
