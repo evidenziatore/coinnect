@@ -116,7 +116,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user}) => {
           boxSizing: 'border-box'
         }}>
           {activeTab === "tab1" && <GestioneContent fetchFromDb={fetchMovements} movements={movements} categories={categories} sources={sources} products={products} userid={user.id} />}
-          {activeTab === "tab2" && <StatisticheContent allMovements={allMovements} userid={user.id} products={products} categories={categories} sources={sources} />}
+          {activeTab === "tab2" && <StatisticheContent allMovements={allMovements} products={products} categories={categories} sources={sources} />}
           {activeTab === "tab3" && <EsportazioniContent/>}
         </div>
       </div>

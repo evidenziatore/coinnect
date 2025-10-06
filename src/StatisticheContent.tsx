@@ -2,7 +2,8 @@ import React, { useMemo, useState } from "react";
 import { Movement, Product, Category, Source } from "./types";
 import LineChart from "./LineChart";
 import PieChart from "./PieChart";
-import Select from "react-select";
+import BarChart from "./BarChart";
+import Select, { MultiValue } from "react-select";
 import { topNFromMap } from "./aggregation";
 
 const tabs = [
@@ -27,19 +28,25 @@ interface Props {
   products: Product[];
   categories: Category[];
   sources: Source[];
-  userid: number;
 }
 
 const StatisticheContent: React.FC<Props> = ({ allMovements, products, categories, sources }) => {
   const [activeTab, setActiveTab] = useState<typeof tabs[number]["key"]>("prodotti");
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [selectedIdsMap, setSelectedIdsMap] = useState<Record<string, number[]>>({
+    prodotti: [],
+    categorie: [],
+    provenienze: [],
+  });
   const [metric, setMetric] = useState<"price" | "count">("price");
   const [granularity, setGranularity] = useState<"day" | "month" | "year">("day");
 
   const currentEntity = tabs.find((t) => t.key === activeTab)!.entity;
   const items = currentEntity === "product" ? products : currentEntity === "category" ? categories : sources;
 
-  const options = items.map((it) => ({ value: it.id, label: it.name })).sort((a, b) => a.label.localeCompare(b.label));
+  const options = items
+    .map((it) => ({ value: it.id, label: it.name }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
   const metricOptions = [
     { value: "price", label: metricLabels.price },
     { value: "count", label: metricLabels.count },
@@ -54,6 +61,20 @@ const StatisticheContent: React.FC<Props> = ({ allMovements, products, categorie
     source: "source_id",
   };
   const entityIdKey = entityIdKeyMap[currentEntity];
+
+  // Selezioni del tab corrente
+  const selectedIds = selectedIdsMap[activeTab] || [];
+
+  // Gestore corretto per React-Select
+  const handleSelectChange = (
+    newValue: MultiValue<{ value: number; label: string }>
+  ) => {
+    const values = newValue.map((s) => s.value);
+    setSelectedIdsMap((prev) => ({
+      ...prev,
+      [activeTab]: values,
+    }));
+  };
 
   const { timeLabels, datasets, distLabels, distValues, distColors } = useMemo(() => {
     const labelMapPerId: Record<number, Record<string, number>> = {};
@@ -84,7 +105,7 @@ const StatisticheContent: React.FC<Props> = ({ allMovements, products, categorie
 
     const sortedLabels = Array.from(allLabelsSet).sort();
 
-    // datasets LineChart cumulativi
+    // datasets cumulativi
     const datasets = selectedIds.length > 0
       ? selectedIds.map((id) => {
           let cumulative = 0;
@@ -152,11 +173,11 @@ const StatisticheContent: React.FC<Props> = ({ allMovements, products, categorie
         distColors.push(idToColor(id));
       });
 
-      // if (altroTotal !== 0) {
-      //   distLabels.push("Altro");
-      //   distValues.push(altroTotal);
-      //   distColors.push("#000000"); // nero
-      // }
+      if (altroTotal !== 0) {
+        distLabels.push("Altro");
+        distValues.push(altroTotal);
+        distColors.push("#000000");
+      }
     }
 
     return { timeLabels: sortedLabels, datasets, distLabels, distValues, distColors };
@@ -167,14 +188,7 @@ const StatisticheContent: React.FC<Props> = ({ allMovements, products, categorie
     maintainAspectRatio: false,
     plugins: { legend: { position: "top" as const }, tooltip: { mode: "index" as const, intersect: false } },
     scales: {
-      x: {
-        ticks: {
-          autoSkip: true,
-          maxTicksLimit: granularity === "day" ? 15 : granularity === "month" ? 12 : 10,
-          maxRotation: 45,
-          minRotation: 0,
-        },
-      },
+      x: { ticks: { autoSkip: true, maxTicksLimit: granularity === "day" ? 15 : granularity === "month" ? 12 : 10 } },
       y: { beginAtZero: true },
     },
   };
@@ -182,23 +196,28 @@ const StatisticheContent: React.FC<Props> = ({ allMovements, products, categorie
   return (
     <div style={{ fontSize: 13, padding: 6 }}>
       {/* Tabs */}
-      <div style={{ display: "flex", marginBottom: 8, gap: 4, flexWrap: "wrap" }}>
-        {tabs.map((t) => (
+      <div style={{ display: "flex", marginBottom: "16px", gap: "8px" }}>
+        {tabs.map((tab) => (
           <button
-            key={t.key}
-            onClick={() => { setActiveTab(t.key); setSelectedIds([]); }}
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
             style={{
-              padding: "4px 10px",
+              padding: "6px 20px",
               border: "none",
-              borderBottom: activeTab === t.key ? "3px solid #2563eb" : "3px solid transparent",
+              borderBottom:
+                activeTab === tab.key
+                  ? "4px solid #2563eb"
+                  : "4px solid transparent",
               background: "none",
               cursor: "pointer",
-              fontWeight: activeTab === t.key ? "600" : "400",
-              color: activeTab === t.key ? "#2563eb" : "#374151",
-              fontSize: 12,
+              fontSize: "16px",
+              fontWeight: activeTab === tab.key ? "bold" : "normal",
+              color: activeTab === tab.key ? "#2563eb" : "#374151",
+              transition: "all 0.2s ease",
+              lineHeight: "1.2",
             }}
           >
-            {t.label}
+            {tab.label}
           </button>
         ))}
       </div>
@@ -211,7 +230,7 @@ const StatisticheContent: React.FC<Props> = ({ allMovements, products, categorie
             options={options}
             isMulti
             value={options.filter((o) => selectedIds.includes(o.value))}
-            onChange={(selected) => setSelectedIds(selected.map((s) => s.value))}
+            onChange={handleSelectChange}
             placeholder="Seleziona..."
             closeMenuOnSelect={false}
           />
@@ -258,7 +277,16 @@ const StatisticheContent: React.FC<Props> = ({ allMovements, products, categorie
 
             <div style={{ minHeight: 220 }}>
               <h4 style={{ margin: "6px 0 6px 0", fontSize: 13 }}>Andamento totale ({metricLabels[metric]})</h4>
-              <LineChart labels={timeLabels} datasets={datasets} title={`Andamento totale ${metricLabels[metric]}`} options={chartOptions} />
+              <BarChart
+                labels={timeLabels}
+                datasets={datasets}
+                title={`Andamento totale ${metricLabels[metric]}`}
+                height={220}
+                options={{
+                  scales: { x: { stacked: false }, y: { beginAtZero: true } },
+                  plugins: { legend: { position: "top" }, tooltip: { mode: "index", intersect: false } },
+                }}
+              />
             </div>
           </>
         )}
