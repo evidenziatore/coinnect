@@ -45,6 +45,17 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
   const [searchText, setSearchText] = useState<Record<string, string>>({});
   const [colorPickersOpen, setColorPickersOpen] = useState<Record<string, boolean>>({});
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  useEffect(() => {
+    const valid = fields.every((f) => {
+      if (f.key === "weight") return true;
+      const val = values[f.key];
+      if (f.type === "number") return val !== undefined && val !== null && val !== "";
+      return String(val).trim() !== "";
+    });
+    setIsFormValid(valid);
+  }, [values, fields]);
 
   // ref container principale del modal (non più usato per il click-out della select)
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -332,6 +343,11 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
           <button
             className={actionType === "delete" ? "button-red" : "button-green"}
             onClick={() => onAction(values)}
+            disabled={actionType !== "delete" && !isFormValid}
+            style={{
+              opacity: actionType !== "delete" && !isFormValid ? 0.5 : 1,
+              cursor: actionType !== "delete" && !isFormValid ? "not-allowed" : "pointer",
+            }}
           >
             {confirm}
           </button>
