@@ -12,6 +12,7 @@ interface UserInfoProps {
 const UserInfo: React.FC<UserInfoProps> = ({ user}) => {
   const [activeTab, setActiveTab] = useState("tab1");
   const [movements, setMovements] = useState<Movement[]>([]);
+  const [allMovements, setAllMovements] = useState<Movement[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [sources, setSources] = useState<Source[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -34,6 +35,15 @@ const UserInfo: React.FC<UserInfoProps> = ({ user}) => {
       product: products.find(p => p.id === m.product_id),
     }));
     setMovements(movements);
+
+    let allMovements = (await invoke<Movement[]>('list_movements', { userid: user.id })) || [];
+    allMovements = allMovements.map(m => ({
+      ...m,
+      category: categories.find(c => c.id === m.category_id),
+      source: sources.find(s => s.id === m.source_id),
+      product: products.find(p => p.id === m.product_id),
+    }));
+    setAllMovements(allMovements);
   };
 
   useEffect(() => { fetchMovements(); }, []);
@@ -106,8 +116,8 @@ const UserInfo: React.FC<UserInfoProps> = ({ user}) => {
           }}
         >
           {activeTab === "tab1" && <GestioneContent fetchFromDb={fetchMovements} movements={movements} categories={categories} sources={sources} products={products} userid={user.id} />}
-          {activeTab === "tab2" && <StatisticheContent />}
-          {activeTab === "tab3" && <EsportazioniContent />}
+          {activeTab === "tab2" && <StatisticheContent allMovements={allMovements} userid={user.id} products={products} categories={categories} sources={sources} />}
+          {activeTab === "tab3" && <EsportazioniContent/>}
         </div>
       </div>
     </div>
