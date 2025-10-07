@@ -108,7 +108,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user}) => {
         }}>
           {activeTab === "tab1" && <GestioneContent fetchFromDb={fetchMovements} movements={movements} categories={categories} sources={sources} products={products} userid={user.id} />}
           {activeTab === "tab2" && <StatisticheContent allMovements={movements} products={products} categories={categories} sources={sources} />}
-          {activeTab === "tab3" && <ConfrontiContent/>}
+          {activeTab === "tab3" && <ConfrontiContent allMovements={movements} products={products} categories={categories} sources={sources} />}
           {activeTab === "tab4" && <EsportazioniContent/>}
         </div>
       </div>
