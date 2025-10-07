@@ -30,18 +30,43 @@ interface Props {
   sources: Source[];
 }
 
-const StatisticheContent: React.FC<Props> = ({ allMovements, products, categories, sources }) => {
-  const [activeTab, setActiveTab] = useState<typeof tabs[number]["key"]>("prodotti");
-  const [selectedIdsMap, setSelectedIdsMap] = useState<Record<string, number[]>>({
+const StatisticheContent: React.FC<Props> = ({
+  allMovements,
+  products,
+  categories,
+  sources,
+}) => {
+  const [activeTab, setActiveTab] = useState<typeof tabs[number]["key"]>(
+    "prodotti"
+  );
+  const [selectedIdsMap, setSelectedIdsMap] = useState<
+    Record<string, number[]>
+  >({
     prodotti: [],
     categorie: [],
     provenienze: [],
   });
   const [metric, setMetric] = useState<"price" | "count">("price");
-  const [granularity, setGranularity] = useState<"day" | "month" | "year">("day");
+  const [granularity, setGranularity] = useState<"day" | "month" | "year">(
+    "day"
+  );
+
+  // 🔹 Filtro per intervallo di tempo
+  const [dateRange, setDateRange] = useState<{
+    from: string | null;
+    to: string | null;
+  }>({
+    from: null,
+    to: null,
+  });
 
   const currentEntity = tabs.find((t) => t.key === activeTab)!.entity;
-  const items = currentEntity === "product" ? products : currentEntity === "category" ? categories : sources;
+  const items =
+    currentEntity === "product"
+      ? products
+      : currentEntity === "category"
+      ? categories
+      : sources;
 
   const options = items
     .map((it) => ({ value: it.id, label: it.name }))
@@ -52,8 +77,10 @@ const StatisticheContent: React.FC<Props> = ({ allMovements, products, categorie
     { value: "count", label: metricLabels.count },
   ];
 
-  const idToName = (id: number) => items.find((it) => it.id === id)?.name ?? `#${id}`;
-  const idToColor = (id: number) => items.find((it) => it.id === id)?.color ?? "#2563eb";
+  const idToName = (id: number) =>
+    items.find((it) => it.id === id)?.name ?? `#${id}`;
+  const idToColor = (id: number) =>
+    items.find((it) => it.id === id)?.color ?? "#2563eb";
 
   const entityIdKeyMap: Record<typeof currentEntity, keyof Movement> = {
     product: "product_id",
@@ -62,10 +89,8 @@ const StatisticheContent: React.FC<Props> = ({ allMovements, products, categorie
   };
   const entityIdKey = entityIdKeyMap[currentEntity];
 
-  // Selezioni del tab corrente
   const selectedIds = selectedIdsMap[activeTab] || [];
 
-  // Gestore corretto per React-Select
   const handleSelectChange = (
     newValue: MultiValue<{ value: number; label: string }>
   ) => {
@@ -76,119 +101,174 @@ const StatisticheContent: React.FC<Props> = ({ allMovements, products, categorie
     }));
   };
 
-  const { timeLabels, datasets, distLabels, distValues, distColors } = useMemo(() => {
-    const labelMapPerId: Record<number, Record<string, number>> = {};
-    const allLabelsSet = new Set<string>();
+  // 🔹 Funzione reset filtri
+  const handleResetFilters = () => {
+    setSelectedIdsMap({ prodotti: [], categorie: [], provenienze: [] });
+    setMetric("price");
+    setGranularity("day");
+    setDateRange({ from: null, to: null });
+  };
 
-    const formatLabel = (dateStr: string) => {
-      const d = new Date(dateStr);
-      switch (granularity) {
-        case "day": return dateStr.slice(0, 10);
-        case "month": return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}`;
-        case "year": return `${d.getFullYear()}`;
-      }
-    };
-
-    allMovements.forEach((m) => {
-      if (!m.date) return;
-      const label = formatLabel(m.date);
-      const val = metric === "count" ? 1 : (m[metric] ?? 0);
-
-      const id = selectedIds.length === 0 ? 0 : (m[entityIdKey] as number);
-      if (selectedIds.length === 0 || selectedIds.includes(id)) {
-        labelMapPerId[id] = labelMapPerId[id] || {};
-        labelMapPerId[id][label] = (labelMapPerId[id][label] || 0) + val;
-      }
-
-      allLabelsSet.add(label);
-    });
-
-    const sortedLabels = Array.from(allLabelsSet).sort();
-
-    // datasets cumulativi
-    const datasets = selectedIds.length > 0
-      ? selectedIds.map((id) => {
-          let cumulative = 0;
-          return {
-            id,
-            label: idToName(id),
-            data: sortedLabels.map((l) => {
-              cumulative += labelMapPerId[id]?.[l] ?? 0;
-              return cumulative;
-            }),
-            fill: false,
-            tension: 0.2,
-            borderColor: idToColor(id),
-            backgroundColor: idToColor(id) + "33",
-          };
-        })
-      : (() => {
-          let cumulative = 0;
-          return [{
-            label: `Totale ${metricLabels[metric]}`,
-            data: sortedLabels.map((l) => {
-              cumulative += labelMapPerId[0]?.[l] ?? 0;
-              return cumulative;
-            }),
-            borderColor: "#2563eb",
-            backgroundColor: "#2563eb33",
-            fill: false,
-            tension: 0.2,
-          }];
-        })();
-
-    // PieChart top 10 + Altro (nero)
-    const distLabels: string[] = [];
-    const distValues: number[] = [];
-    const distColors: string[] = [];
-
-    if (selectedIds.length === 0) {
-      const absAggregateMap: Record<number, number> = {};
-      allMovements.forEach((m) => {
-        const id = m[entityIdKey] as number;
-        const val = metric === "count" ? 1 : Math.abs(m[metric] ?? 0);
-        absAggregateMap[id] = (absAggregateMap[id] || 0) + val;
+  const { timeLabels, datasets, distLabels, distValues, distColors } =
+    useMemo(() => {
+      // 🔹 Applica filtro per intervallo di tempo
+      const filteredMovements = allMovements.filter((m) => {
+        if (!m.date) return false;
+        const d = new Date(m.date);
+        const fromOk = !dateRange.from || d >= new Date(dateRange.from);
+        const toOk = !dateRange.to || d <= new Date(dateRange.to);
+        return fromOk && toOk;
       });
 
-      const top = topNFromMap(absAggregateMap, (id) => idToName(id), 10);
+      const labelMapPerId: Record<number, Record<string, number>> = {};
+      const allLabelsSet = new Set<string>();
 
-      let altroTotal = 0;
-      Object.keys(absAggregateMap).forEach((idStr) => {
-        const id = Number(idStr);
-        if (!top.ids.includes(id)) {
-          const realVal = allMovements
-            .filter((m) => (m[entityIdKey] as number) === id)
-            .reduce((sum, m) => sum + (metric === "count" ? 1 : (m[metric] ?? 0)), 0);
-          altroTotal += realVal;
+      const formatLabel = (dateStr?: string) => {
+        if (!dateStr) return "";
+        const d = new Date(dateStr);
+        switch (granularity) {
+          case "day":
+            return dateStr.slice(0, 10);
+          case "month":
+            return `${d.getFullYear()}-${(d.getMonth() + 1)
+              .toString()
+              .padStart(2, "0")}`;
+          case "year":
+            return `${d.getFullYear()}`;
+          default:
+            return "";
         }
+      };
+
+      filteredMovements.forEach((m) => {
+        const label = formatLabel(m.date);
+        const val = metric === "count" ? 1 : m[metric] ?? 0;
+        const id = selectedIds.length === 0 ? 0 : (m[entityIdKey] as number);
+
+        if (selectedIds.length === 0 || selectedIds.includes(id)) {
+          labelMapPerId[id] = labelMapPerId[id] || {};
+          labelMapPerId[id][label] =
+            (labelMapPerId[id][label] || 0) + val;
+        }
+
+        allLabelsSet.add(label);
       });
 
-      top.ids.forEach((id, i) => {
-        const realVal = allMovements
-          .filter((m) => (m[entityIdKey] as number) === id)
-          .reduce((sum, m) => sum + (metric === "count" ? 1 : (m[metric] ?? 0)), 0);
+      const sortedLabels = Array.from(allLabelsSet).sort();
 
-        distLabels.push(top.labels[i]);
-        distValues.push(realVal);
-        distColors.push(idToColor(id));
-      });
+      const datasets =
+        selectedIds.length > 0
+          ? selectedIds.map((id) => {
+              let cumulative = 0;
+              return {
+                id,
+                label: idToName(id),
+                data: sortedLabels.map((l) => {
+                  cumulative += labelMapPerId[id]?.[l] ?? 0;
+                  return cumulative;
+                }),
+                fill: false,
+                tension: 0.2,
+                borderColor: idToColor(id),
+                backgroundColor: idToColor(id) + "33",
+              };
+            })
+          : (() => {
+              let cumulative = 0;
+              return [
+                {
+                  label: `Totale ${metricLabels[metric]}`,
+                  data: sortedLabels.map((l) => {
+                    cumulative += labelMapPerId[0]?.[l] ?? 0;
+                    return cumulative;
+                  }),
+                  borderColor: "#2563eb",
+                  backgroundColor: "#2563eb33",
+                  fill: false,
+                  tension: 0.2,
+                },
+              ];
+            })();
 
-      if (altroTotal !== 0) {
-        distLabels.push("Altro");
-        distValues.push(altroTotal);
-        distColors.push("#000000");
+      const distLabels: string[] = [];
+      const distValues: number[] = [];
+      const distColors: string[] = [];
+
+      if (selectedIds.length === 0) {
+        const absAggregateMap: Record<number, number> = {};
+        filteredMovements.forEach((m) => {
+          const id = m[entityIdKey] as number;
+          const val = metric === "count" ? 1 : Math.abs(m[metric] ?? 0);
+          absAggregateMap[id] = (absAggregateMap[id] || 0) + val;
+        });
+
+        const top = topNFromMap(absAggregateMap, (id) => idToName(id), 10);
+        let altroTotal = 0;
+        Object.keys(absAggregateMap).forEach((idStr) => {
+          const id = Number(idStr);
+          if (!top.ids.includes(id)) {
+            const realVal = filteredMovements
+              .filter((m) => (m[entityIdKey] as number) === id)
+              .reduce(
+                (sum, m) =>
+                  sum + (metric === "count" ? 1 : m[metric] ?? 0),
+                0
+              );
+            altroTotal += realVal;
+          }
+        });
+
+        top.ids.forEach((id, i) => {
+          const realVal = filteredMovements
+            .filter((m) => (m[entityIdKey] as number) === id)
+            .reduce(
+              (sum, m) => sum + (metric === "count" ? 1 : m[metric] ?? 0),
+              0
+            );
+          distLabels.push(top.labels[i]);
+          distValues.push(realVal);
+          distColors.push(idToColor(id));
+        });
+
+        if (altroTotal !== 0) {
+          distLabels.push("Altro");
+          distValues.push(altroTotal);
+          distColors.push("#000000");
+        }
       }
-    }
 
-    return { timeLabels: sortedLabels, datasets, distLabels, distValues, distColors };
-  }, [allMovements, currentEntity, selectedIds, metric, granularity, products, categories, sources]);
+      return { timeLabels: sortedLabels, datasets, distLabels, distValues, distColors };
+    }, [
+      allMovements,
+      currentEntity,
+      selectedIds,
+      metric,
+      granularity,
+      dateRange,
+      products,
+      categories,
+      sources,
+    ]);
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { position: "top" as const }, tooltip: { mode: "index" as const, intersect: false } },
+    plugins: {
+      legend: { position: "top" as const },
+      tooltip: { mode: "index" as const, intersect: false },
+    },
     scales: {
-      x: { ticks: { autoSkip: true, maxTicksLimit: granularity === "day" ? 15 : granularity === "month" ? 12 : 10 } },
+      x: {
+        ticks: {
+          autoSkip: true,
+          maxTicksLimit:
+            granularity === "day"
+              ? 15
+              : granularity === "month"
+              ? 12
+              : 10,
+        },
+      },
       y: { beginAtZero: true },
     },
   };
@@ -223,8 +303,18 @@ const StatisticheContent: React.FC<Props> = ({ allMovements, products, categorie
       </div>
 
       {/* Filtri */}
-      <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 16 }}>
-        <label><strong>{tabs.find((x) => x.key === activeTab)!.label}:</strong></label>
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          alignItems: "center",
+          marginBottom: 16,
+          flexWrap: "wrap",
+        }}
+      >
+        <label>
+          <strong>{tabs.find((x) => x.key === activeTab)!.label}:</strong>
+        </label>
         <div style={{ minWidth: 250 }}>
           <Select
             options={options}
@@ -236,27 +326,82 @@ const StatisticheContent: React.FC<Props> = ({ allMovements, products, categorie
           />
         </div>
 
-        <label style={{ display: "flex", flexDirection: "column" }}>Metrica:</label>
-        <div style={{ minWidth: 200, marginTop: 4 }}>
+        <label>Metrica:</label>
+        <div style={{ minWidth: 200 }}>
           <Select
             options={metricOptions}
             value={metricOptions.find((m) => m.value === metric)}
-            onChange={(selected) => setMetric(selected!.value as "price" | "count")}
+            onChange={(selected) =>
+              setMetric(selected!.value as "price" | "count")
+            }
             placeholder="Seleziona metrica..."
             isClearable={false}
           />
         </div>
 
-        <label style={{ display: "flex", flexDirection: "column" }}>Granularità:</label>
-        <div style={{ minWidth: 150, marginTop: 4 }}>
+        <label>Granularità:</label>
+        <div style={{ minWidth: 150 }}>
           <Select
             options={granularityOptions}
             value={granularityOptions.find((g) => g.value === granularity)}
-            onChange={(selected) => setGranularity(selected!.value as "day" | "month" | "year")}
+            onChange={(selected) =>
+              setGranularity(selected!.value as "day" | "month" | "year")
+            }
             placeholder="Seleziona granularità..."
             isClearable={false}
           />
         </div>
+
+        {/* 🔹 Intervallo date ingrandito */}
+        <label>Intervallo:</label>
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <input
+            type="date"
+            value={dateRange.from ?? ""}
+            onChange={(e) =>
+              setDateRange((prev) => ({ ...prev, from: e.target.value || null }))
+            }
+            style={{
+              padding: "6px 10px",
+              border: "1px solid #d1d5db",
+              borderRadius: 6,
+              fontSize: 14,
+            }}
+          />
+          <span>–</span>
+          <input
+            type="date"
+            value={dateRange.to ?? ""}
+            onChange={(e) =>
+              setDateRange((prev) => ({ ...prev, to: e.target.value || null }))
+            }
+            style={{
+              padding: "6px 10px",
+              border: "1px solid #d1d5db",
+              borderRadius: 6,
+              fontSize: 14,
+            }}
+          />
+        </div>
+
+        {/* 🔹 Pulsante di reset */}
+        <button
+          onClick={handleResetFilters}
+          style={{
+            marginLeft: 8,
+            backgroundColor: "#3b82f6",
+            color: "white",
+            border: "none",
+            borderRadius: 6,
+            padding: "6px 14px",
+            cursor: "pointer",
+            fontSize: 13,
+            fontWeight: 600,
+            transition: "background 0.2s ease",
+          }}
+        >
+          Reset filtri
+        </button>
       </div>
 
       {/* Charts */}
@@ -264,27 +409,48 @@ const StatisticheContent: React.FC<Props> = ({ allMovements, products, categorie
         {selectedIds.length > 0 ? (
           <div style={{ minHeight: 220 }}>
             <h4 style={{ margin: "4px 0 6px 0", fontSize: 13 }}>
-              {selectedIds.map((id) => idToName(id)).join(", ")} — andamento {metricLabels[metric]}
+              {selectedIds.map((id) => idToName(id)).join(", ")} — andamento{" "}
+              {metricLabels[metric]}
             </h4>
-            <LineChart labels={timeLabels} datasets={datasets} title={`Andamento ${metricLabels[metric]}`} options={chartOptions} />
+            <LineChart
+              labels={timeLabels}
+              datasets={datasets}
+              title={`Andamento ${metricLabels[metric]}`}
+              options={chartOptions}
+            />
           </div>
         ) : (
           <>
             <div style={{ minHeight: 200 }}>
-              <h4 style={{ margin: "4px 0 6px 0", fontSize: 13 }}>Distribuzione</h4>
-              <PieChart labels={distLabels} values={distValues} colors={distColors} title={`Distribuzione ${metricLabels[metric]}`} />
+              <h4 style={{ margin: "4px 0 6px 0", fontSize: 13 }}>
+                Distribuzione
+              </h4>
+              <PieChart
+                labels={distLabels}
+                values={distValues}
+                colors={distColors}
+                title={`Distribuzione ${metricLabels[metric]}`}
+              />
             </div>
 
             <div style={{ minHeight: 220 }}>
-              <h4 style={{ margin: "6px 0 6px 0", fontSize: 13 }}>Andamento totale ({metricLabels[metric]})</h4>
+              <h4 style={{ margin: "6px 0 6px 0", fontSize: 13 }}>
+                Andamento totale ({metricLabels[metric]})
+              </h4>
               <BarChart
                 labels={timeLabels}
                 datasets={datasets}
                 title={`Andamento totale ${metricLabels[metric]}`}
                 height={220}
                 options={{
-                  scales: { x: { stacked: false }, y: { beginAtZero: true } },
-                  plugins: { legend: { position: "top" }, tooltip: { mode: "index", intersect: false } },
+                  scales: {
+                    x: { stacked: false },
+                    y: { beginAtZero: true },
+                  },
+                  plugins: {
+                    legend: { position: "top" },
+                    tooltip: { mode: "index", intersect: false },
+                  },
                 }}
               />
             </div>
