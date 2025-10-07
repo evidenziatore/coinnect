@@ -111,12 +111,17 @@ const StatisticheContent: React.FC<Props> = ({
 
   const { timeLabels, datasets, distLabels, distValues, distColors } =
     useMemo(() => {
-      // 🔹 Applica filtro per intervallo di tempo
       const filteredMovements = allMovements.filter((m) => {
         if (!m.date) return false;
-        const d = new Date(m.date);
-        const fromOk = !dateRange.from || d >= new Date(dateRange.from);
-        const toOk = !dateRange.to || d <= new Date(dateRange.to);
+
+        const movementDate = m.date.slice(0, 10); // YYYY-MM-DD
+
+        const fromDate = dateRange.from ?? null; // YYYY-MM-DD o null
+        const toDate = dateRange.to ?? null;     // YYYY-MM-DD o null
+
+        const fromOk = !fromDate || movementDate >= fromDate;
+        const toOk = !toDate || movementDate <= toDate;
+
         return fromOk && toOk;
       });
 
