@@ -201,22 +201,32 @@ const StatisticheContent: React.FC<Props> = ({
 
       if (selectedIds.length === 0) {
         const absAggregateMap: Record<number, number> = {};
-        filteredMovements.forEach((m) => {
+
+        // 🔹 Ordina per data crescente
+        const sorted = [...filteredMovements].sort((a, b) =>
+          (a.date ?? "").localeCompare(b.date ?? "")
+        );
+
+        // 🔹 Escludi il primo movimento (saldo iniziale)
+        const movementsForPie = sorted.slice(1);
+
+        // 🔹 Calcolo aggregato sui movimenti rimanenti
+        movementsForPie.forEach((m) => {
           const id = m[entityIdKey] as number;
           const val = metric === "count" ? 1 : Math.abs(m[metric] ?? 0);
           absAggregateMap[id] = (absAggregateMap[id] || 0) + val;
         });
 
+        // 🔹 Costruzione topN + "Altro" escluso primo movimento
         const top = topNFromMap(absAggregateMap, (id) => idToName(id), 10);
         let altroTotal = 0;
         Object.keys(absAggregateMap).forEach((idStr) => {
           const id = Number(idStr);
           if (!top.ids.includes(id)) {
-            const realVal = filteredMovements
+            const realVal = movementsForPie
               .filter((m) => (m[entityIdKey] as number) === id)
               .reduce(
-                (sum, m) =>
-                  sum + (metric === "count" ? 1 : m[metric] ?? 0),
+                (sum, m) => sum + (metric === "count" ? 1 : m[metric] ?? 0),
                 0
               );
             altroTotal += realVal;
@@ -224,7 +234,7 @@ const StatisticheContent: React.FC<Props> = ({
         });
 
         top.ids.forEach((id, i) => {
-          const realVal = filteredMovements
+          const realVal = movementsForPie
             .filter((m) => (m[entityIdKey] as number) === id)
             .reduce(
               (sum, m) => sum + (metric === "count" ? 1 : m[metric] ?? 0),

@@ -5,6 +5,7 @@ import GestioneContent from './GestioneContent';
 import StatisticheContent from './StatisticheContent';
 import { invoke } from '@tauri-apps/api/core';
 import ConfrontiContent from './ConfrontiContent';
+import PrevisioniContent from './PrevisioniContent';
 
 interface UserInfoProps {
   user: User;
@@ -39,7 +40,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user}) => {
 
   useEffect(() => { fetchMovements(); }, []);
 
-  const tabs = ["Gestione", "Statistiche", "Confronti", "Esportazioni"];
+  const tabs = ["Gestione", "Statistiche", "Confronti", "Previsioni", "Esportazioni"];
 
   return (
     <div style={{ display: "flex", height: "85vh" }}>
@@ -109,7 +110,8 @@ const UserInfo: React.FC<UserInfoProps> = ({ user}) => {
           {activeTab === "tab1" && <GestioneContent fetchFromDb={fetchMovements} movements={movements} categories={categories} sources={sources} products={products} userid={user.id} />}
           {activeTab === "tab2" && <StatisticheContent allMovements={movements} products={products} categories={categories} sources={sources} />}
           {activeTab === "tab3" && <ConfrontiContent allMovements={movements} products={products} categories={categories} sources={sources} />}
-          {activeTab === "tab4" && <EsportazioniContent allMovements={movements} products={products} categories={categories} sources={sources} />}
+          {activeTab === "tab4" && <PrevisioniContent allMovements={movements} />}
+          {activeTab === "tab5" && <EsportazioniContent allMovements={movements} products={products} categories={categories} sources={sources} />}
         </div>
       </div>
     </div>

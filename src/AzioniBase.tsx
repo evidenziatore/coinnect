@@ -57,10 +57,7 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
     setIsFormValid(valid);
   }, [values, fields]);
 
-  // ref container principale del modal (non più usato per il click-out della select)
   const containerRef = useRef<HTMLDivElement | null>(null);
-
-  // refs per ogni select dropdown wrapper
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
@@ -92,7 +89,6 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
     setColorPickersOpen(initialPickers);
   }, [fields, actionType]);
 
-  // handler globale: chiude la dropdown attiva se il click è fuori dalla sua wrapper
   useEffect(() => {
     const handleDocumentClick = (event: MouseEvent) => {
       if (!openDropdown) return;
@@ -104,7 +100,6 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
       }
 
       if (!activeWrapper.contains(event.target as Node)) {
-        // reset del testo al valore selezionato (se presente)
         const field = fields.find((f) => f.key === openDropdown);
         if (field?.type === "select" && field.options) {
           const selectedLabel =
@@ -127,6 +122,10 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
 
   const toggleColorPicker = (key: string) => {
     setColorPickersOpen((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const generateRandomColor = () => {
+    return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0")}`;
   };
 
   return (
@@ -206,12 +205,10 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
                 </span>
               )
             ) : f.type === "select" && f.options ? (
-              // wrapper con ref specifica per questa select
               <div
                 ref={(el) => void (dropdownRefs.current[f.key] = el)}
                 style={{ position: "relative" }}
               >
-                {/* Input ricerca */}
                 <input
                   type="text"
                   placeholder="Cerca..."
@@ -230,7 +227,6 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
                   }}
                 />
 
-                {/* Lista opzioni filtrata */}
                 {openDropdown === f.key && (
                   <div
                     style={{
@@ -279,7 +275,7 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
                 )}
               </div>
             ) : f.type === "color" ? (
-              <div style={{ position: "relative" }}>
+              <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 8 }}>
                 <button
                   type="button"
                   onClick={() => toggleColorPicker(f.key)}
@@ -292,7 +288,20 @@ const AzioniBase: React.FC<AzioniBaseProps> = ({
                     cursor: "pointer",
                   }}
                 />
-                <span style={{ marginLeft: 8 }}>{values[f.key]}</span>
+                <span>{values[f.key]}</span>
+
+                <span
+                  onClick={() => handleChange(f.key, generateRandomColor())}
+                  style={{
+                    cursor: "pointer",
+                    fontSize: "2.0rem", // dimensione dell'icona
+                    userSelect: "none",
+                  }}
+                  title="Colore casuale"
+                >
+                  🔀
+                </span>
+
                 {colorPickersOpen[f.key] && (
                   <div
                     style={{
