@@ -29,13 +29,13 @@ const PrevisioniContent: React.FC<Props> = ({ allMovements }) => {
 
     if (sorted.length === 0) return;
 
-    // Il primo movimento è il saldo iniziale
+    // 1️⃣ Saldo iniziale
     const baseAmount = sorted[0].price ?? 0;
 
-    // Movimenti passati (escludendo il primo)
+    // 2️⃣ Movimenti passati
     const pastMovements = sorted.slice(1).filter((m) => m.date && m.date <= today);
 
-    // Somma giornaliera
+    // 3️⃣ Somma giornaliera
     const dailyTotals: Record<string, number> = {};
     for (const m of pastMovements) {
       const day = m.date!;
@@ -45,26 +45,33 @@ const PrevisioniContent: React.FC<Props> = ({ allMovements }) => {
     const days = Object.keys(dailyTotals).sort();
     const values = days.map((d) => dailyTotals[d]);
 
-    // Totale attuale
-    const totalNow = baseAmount + values.reduce((a, b) => a + b, 0);
+    // 4️⃣ Costruisci saldi cumulativi
+    let cumulative = baseAmount;
+    const cumulativeValues = values.map((v) => (cumulative += v));
 
-    // Crescita media giornaliera
+    // 5️⃣ Totale attuale
+    const totalNow = cumulativeValues[cumulativeValues.length - 1] ?? baseAmount;
+
+    // 6️⃣ Crescita media giornaliera sui saldi cumulativi
     let dailyGrowth = 0;
-    if (values.length > 1) {
+    if (cumulativeValues.length > 1) {
       const firstDate = new Date(days[0]);
       const lastDate = new Date(days[days.length - 1]);
-      const diffDays = (lastDate.getTime() - firstDate.getTime()) / (1000 * 3600 * 24);
-      const growth = values[values.length - 1] - values[0];
+      const diffDays =
+        (lastDate.getTime() - firstDate.getTime()) / (1000 * 3600 * 24);
+      const growth =
+        cumulativeValues[cumulativeValues.length - 1] - cumulativeValues[0];
       dailyGrowth = growth / diffDays;
     }
 
-    // 🔮 Se la data scelta è nel futuro → proiezione
+    // 7️⃣ Proiezione futura
     let totalPredicted = totalNow;
     let daysProjected = 0;
 
     if (toDate && toDate > today) {
       const futureDays =
-        (new Date(toDate).getTime() - new Date(today).getTime()) / (1000 * 3600 * 24);
+        (new Date(toDate).getTime() - new Date(today).getTime()) /
+        (1000 * 3600 * 24);
       totalPredicted = totalNow + dailyGrowth * futureDays;
       daysProjected = Math.round(futureDays);
     }

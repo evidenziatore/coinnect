@@ -41,9 +41,21 @@ const FilterableTable: React.FC<FilterableTableProps> = ({
     return [...filteredData].sort((a, b) => {
       const valA = a[sortColumn];
       const valB = b[sortColumn];
-      if (typeof valA === "number" && typeof valB === "number") {
-        return sortDirection === "asc" ? valA - valB : valB - valA;
+      // Colonne da trattare come numeriche
+      const numericColumns = ["peso", "prezzo"];
+
+      const isNumericColumn = numericColumns.some((name) =>
+        sortColumn.toLowerCase().includes(name)
+      );
+
+      let numA = parseFloat(String(valA).replace(",", "."));
+      let numB = parseFloat(String(valB).replace(",", "."));
+
+      if (isNumericColumn && !isNaN(numA) && !isNaN(numB)) {
+        return sortDirection === "asc" ? numA - numB : numB - numA;
       }
+
+      // Ordinamento alfabetico di fallback
       return sortDirection === "asc"
         ? String(valA).localeCompare(String(valB))
         : String(valB).localeCompare(String(valA));
