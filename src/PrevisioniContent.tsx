@@ -42,6 +42,23 @@ const PrevisioniContent: React.FC<Props> = ({ allMovements }) => {
       dailyTotals[day] = (dailyTotals[day] || 0) + (m.price ?? 0);
     }
 
+    // 🟢 Aggiungi anche i giorni mancanti (riempiti con 0)
+    if (Object.keys(dailyTotals).length > 0) {
+      const firstDate = new Date(Object.keys(dailyTotals)[0]);
+      const lastDate = new Date(Object.keys(dailyTotals).slice(-1)[0]);
+      for (
+        let d = new Date(firstDate);
+        d <= lastDate;
+        d.setDate(d.getDate() + 1)
+      ) {
+        const dayStr = d.toISOString().split("T")[0];
+        if (!(dayStr in dailyTotals)) {
+          dailyTotals[dayStr] = 0;
+        }
+      }
+    }
+
+    // Ordina le date (inclusi i giorni “vuoti”)
     const days = Object.keys(dailyTotals).sort();
     const values = days.map((d) => dailyTotals[d]);
 
